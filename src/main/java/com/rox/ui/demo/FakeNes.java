@@ -1,15 +1,20 @@
 package com.rox.ui.demo;
 
+import com.rox.ui.data.MemoryRegion;
 import com.rox.ui.data.MemorySource;
+import com.rox.ui.debugger.DebugTarget;
+import com.rox.ui.debugger.NesMemoryMap;
 
+import java.util.List;
 import java.util.Random;
 
 /**
  * Stand-in for the emulator: a 64K NES-like address space with a background thread that
  * writes plausible game activity at 60 frames per second.
  */
-final class FakeNes implements MemorySource {
+final class FakeNes implements MemorySource, DebugTarget {
     private static final int SIZE = 0x10000;
+
 
     private final int[] ram = new int[0x800];
     private final int[] ppuRegs = new int[8];
@@ -89,11 +94,61 @@ final class FakeNes implements MemorySource {
         }
     }
 
-    boolean isPaused() {
+    // ---- DebugTarget ------------------------------------------------------------------------
+
+    @Override
+    public MemorySource memory() {
+        return this;
+    }
+
+    @Override
+    public List<MemoryRegion> regions() {
+        return NesMemoryMap.REGIONS;
+    }
+
+    @Override
+    public List<Label> labels() {
+        return List.of(
+                new Label("Frame counter", 0x0010),
+                new Label("Player X", 0x0030),
+                new Label("Player Y", 0x0031),
+                new Label("Enemy 0 Y", 0x0041),
+                new Label("Health", 0x0076),
+                new Label("RNG lo", 0x0080),
+                new Label("PPUCTRL", 0x2000));
+    }
+
+    @Override
+    public CpuState cpu() {
+        return new CpuState(pc, a, x, y, sp, p);
+    }
+
+    @Override
+    public void pause() {
+        setPaused(true);
+    }
+
+    @Override
+    public void resume() {
+        setPaused(false);
+    }
+
+    @Override
+    public void stepInstruction() {
+        stepFrame(); // the fake has no instruction granularity
+    }
+
+    @Override
+    public String status() {
+        return String.format("frame %,d  ·  %.1f fps  ·  simulated data", frames, fps());
+    }
+
+    @Override
+    public boolean isPaused() {
         return paused;
     }
 
-    void setPaused(boolean value) {
+    private void setPaused(boolean value) {
         synchronized (lock) {
             paused = value;
             if (!value) {
@@ -102,7 +157,8 @@ final class FakeNes implements MemorySource {
         }
     }
 
-    void stepFrame() {
+    @Override
+    public void stepFrame() {
         synchronized (lock) {
             if (paused) {
                 frame();

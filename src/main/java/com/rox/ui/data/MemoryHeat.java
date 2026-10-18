@@ -1,5 +1,7 @@
 package com.rox.ui.data;
 
+import java.util.function.IntUnaryOperator;
+
 /**
  * Detects writes by diffing a {@link MemorySource} once per UI frame and tracks a decaying
  * "heat" per address, plus a running write count. Works without any bus write hooks.
@@ -18,16 +20,18 @@ public final class MemoryHeat {
         values = new int[memory.size()];
         heat = new float[memory.size()];
         writes = new int[memory.size()];
+        IntUnaryOperator read = memory.reader();
         for (int a = 0; a < values.length; a++) {
-            values[a] = memory.peek(a);
+            values[a] = read.applyAsInt(a);
         }
     }
 
     public void update(float dtSeconds) {
         float decay = (float) Math.pow(0.5, dtSeconds / halfLifeSeconds);
         int changed = 0;
+        IntUnaryOperator read = memory.reader();
         for (int a = 0; a < values.length; a++) {
-            int v = memory.peek(a);
+            int v = read.applyAsInt(a);
             if (v != values[a]) {
                 values[a] = v;
                 heat[a] = 1f;

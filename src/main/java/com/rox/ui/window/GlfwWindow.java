@@ -139,6 +139,11 @@ public final class GlfwWindow implements AutoCloseable {
                 SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, ColorSpace.getSRGB());
     }
 
+    /** Makes {@link #run} return after the current frame; safe from any thread. */
+    public void requestClose() {
+        glfwSetWindowShouldClose(handle, true);
+    }
+
     @Override
     public void close() {
         if (surface != null) {
