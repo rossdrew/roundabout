@@ -1,5 +1,6 @@
 package com.rox.ui.debugger;
 
+import com.rox.ui.data.FrameTimes;
 import com.rox.ui.data.MemoryRegion;
 import com.rox.ui.data.MemorySource;
 
@@ -22,6 +23,16 @@ public interface DebugTarget {
 
     default List<Label> labels() {
         return List.of();
+    }
+
+    /** Frame streams to show in a frame-timing panel, e.g. frames produced and frames shown; none by default. */
+    default List<FrameTimes> frameTimings() {
+        return List.of();
+    }
+
+    /** The intended interval between frames, for the frame-timing panel's budget marker. */
+    default float frameBudgetMs() {
+        return 1000f / 60;
     }
 
     CpuState cpu();

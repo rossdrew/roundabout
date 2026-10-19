@@ -3,6 +3,8 @@ package com.rox.ui.debugger;
 import com.rox.ui.Box;
 import com.rox.ui.Theme;
 import com.rox.ui.Ui;
+import com.rox.ui.data.FrameTimes;
+import com.rox.ui.data.FrameTimingGraph;
 import com.rox.ui.data.Graphs;
 import com.rox.ui.data.HexGrid;
 import com.rox.ui.data.MemoryHeat;
@@ -89,6 +91,9 @@ public final class MemoryDebugger {
         for (Watch w : watches) {
             w.history().add(heat.value(w.address()));
         }
+        for (FrameTimes times : target.frameTimings()) {
+            times.update();
+        }
 
         Theme t = ui.theme;
         canvas.clear(t.background);
@@ -108,6 +113,13 @@ public final class MemoryDebugger {
         int jump = map.draw(ui, ui.panel(left, "Memory map"), heat, hex.firstVisibleAddress(), hex.lastVisibleAddress());
         if (jump >= 0) {
             hex.scrollTo(jump);
+        }
+
+        List<FrameTimes> timings = target.frameTimings();
+        if (!timings.isEmpty()) {
+            Box timing = body.cutBottom(40 + 110 * timings.size());
+            body.cutBottom(10);
+            frameTiming(timing, timings);
         }
 
         hex.draw(ui, ui.panel(body, String.format("Memory  ·  $0000 – $%04X", heat.size() - 1)), heat, dt);
@@ -281,6 +293,18 @@ public final class MemoryDebugger {
             content.cutTop(2);
         }
         ui.unclip();
+    }
+
+    private void frameTiming(Box area, List<FrameTimes> timings) {
+        Box content = ui.panel(area, String.format("Frame timing  ·  ms between frames  ·  budget %.1f ms", target.frameBudgetMs()));
+        float rowH = (content.h - 10 * (timings.size() - 1)) / timings.size();
+        for (int i = 0; i < timings.size(); i++) {
+            if (i > 0) {
+                content.cutTop(10);
+            }
+            FrameTimingGraph.draw(ui, content.cutTop(rowH), timings.get(i), target.frameBudgetMs(),
+                    target.frameBudgetMs() / 1000);
+        }
     }
 
     private void watchGraph(Box area) {

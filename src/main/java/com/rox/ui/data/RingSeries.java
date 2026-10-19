@@ -44,6 +44,30 @@ public final class RingSeries {
         return count == 0 ? 0 : max;
     }
 
+    /** The sample {@code p} (0-1) of the way up the sorted samples, e.g. 0.99 for p99; 0 when empty. */
+    public float percentile(float p) {
+        if (count == 0) {
+            return 0;
+        }
+        float[] sorted = new float[count];
+        for (int i = 0; i < count; i++) {
+            sorted[i] = get(i);
+        }
+        java.util.Arrays.sort(sorted);
+        return sorted[Math.min(count - 1, (int) (p * count))];
+    }
+
+    /** How many samples are strictly greater than {@code threshold}. */
+    public int countAbove(float threshold) {
+        int n = 0;
+        for (int i = 0; i < count; i++) {
+            if (get(i) > threshold) {
+                n++;
+            }
+        }
+        return n;
+    }
+
     public float average() {
         float sum = 0;
         for (int i = 0; i < count; i++) {

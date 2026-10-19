@@ -7,6 +7,8 @@ import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.Shader;
 import io.github.humbleui.types.Point;
 
+import java.util.function.DoubleFunction;
+
 /** Line graphs over {@link RingSeries}. */
 public final class Graphs {
     private Graphs() {
@@ -30,7 +32,11 @@ public final class Graphs {
         for (int p = 0; p < points; p++) {
             int i = p == points - 1 ? series.size() - 1 : p * stride;
             float x = x0 + i * step;
-            float f = (Math.clamp(series.get(i), min, max) - min) / range;
+            float v = series.get(i);
+            for (int j = i + 1; j < Math.min(series.size(), i + stride); j++) {
+                v = Math.max(v, series.get(j)); // a one-sample spike must survive downsampling
+            }
+            float f = (Math.clamp(v, min, max) - min) / range;
             float y = box.bottom() - f * box.h;
             xy[p * 2] = x;
             xy[p * 2 + 1] = y;
@@ -46,9 +52,23 @@ public final class Graphs {
         ui.strokePaint(colour, 1);
     }
 
-    /** Full graph with grid lines, value axis, latest-value marker and hover readout. */
-    public static void lineGraph(Ui ui, Box area, RingSeries series, float min, float max, int colour,
-                                 float sampleSeconds) {
+    /** Full graph of byte values (hex axis and readout) - see the general overload. */
+    public static Box lineGraph(Ui ui, Box area, RingSeries series, float min, float max, int colour,
+                                float sampleSeconds) {
+        return lineGraph(ui, area, series, min, max, colour, sampleSeconds,
+                v -> String.format("%02X", (int) v), v -> String.format("$%02X  %d", (int) v, (int) v));
+    }
+
+    /**
+     * Full graph with grid lines, value axis, latest-value marker and hover readout.
+     *
+     * @param axisLabel formats the value axis's tick labels
+     * @param valueLabel formats the hovered sample in the tooltip
+     * @return the plot area, for drawing reference lines with {@link #guide}
+     */
+    public static Box lineGraph(Ui ui, Box area, RingSeries series, float min, float max, int colour,
+                                float sampleSeconds, DoubleFunction<String> axisLabel,
+                                DoubleFunction<String> valueLabel) {
         Theme t = ui.theme;
         Box box = area.copy();
         Box axis = box.cutLeft(34);
@@ -59,12 +79,12 @@ public final class Graphs {
             float v = min + (max - min) * i / 4;
             float y = box.bottom() - box.h * i / 4;
             ui.line(box.x, y, box.right(), y, i == 0 ? t.border : Theme.withAlpha(t.border, 0.6f));
-            ui.textRight(new Box(axis.x, y - 7, axis.w - 6, 14), String.format("%02X", (int) v), t.uiSmall, t.textFaint);
+            ui.textRight(new Box(axis.x, y - 7, axis.w - 6, 14), axisLabel.apply(v), t.uiSmall, t.textFaint);
         }
         sparkline(ui, box, series, min, max, colour);
 
         if (series.size() > 0) {
-            float y = box.bottom() - (series.latest() - min) / (max - min) * box.h;
+            float y = box.bottom() - (Math.clamp(series.latest(), min, max) - min) / (max - min) * box.h;
             ui.canvas.drawCircle(box.right(), y, 3.5f, ui.paint(colour));
         }
 
@@ -76,12 +96,19 @@ public final class Graphs {
             if (i >= 0) {
                 float x = box.right() - fromEnd * step;
                 float v = series.get(i);
-                float y = box.bottom() - (v - min) / (max - min) * box.h;
+                float y = box.bottom() - (Math.clamp(v, min, max) - min) / (max - min) * box.h;
                 ui.line(x, box.y, x, box.bottom(), Theme.withAlpha(t.text, 0.25f));
                 ui.canvas.drawCircle(x, y, 4, ui.paint(t.background));
                 ui.canvas.drawCircle(x, y, 3, ui.paint(colour));
-                ui.setTooltip(String.format("$%02X  %d%n-%.2fs", (int) v, (int) v, fromEnd * sampleSeconds));
+                ui.setTooltip(String.format("%s%n-%.2fs", valueLabel.apply(v), fromEnd * sampleSeconds));
             }
         }
+        return box;
+    }
+
+    /** A horizontal reference line at {@code value} across a {@link #lineGraph}'s plot area. */
+    public static void guide(Ui ui, Box plot, float value, float min, float max, int colour) {
+        float y = plot.bottom() - (Math.clamp(value, min, max) - min) / (max - min) * plot.h;
+        ui.line(plot.x, y, plot.right(), y, Theme.withAlpha(colour, 0.5f));
     }
 }

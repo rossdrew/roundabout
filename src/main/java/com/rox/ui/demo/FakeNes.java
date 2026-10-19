@@ -1,5 +1,6 @@
 package com.rox.ui.demo;
 
+import com.rox.ui.data.FrameTimes;
 import com.rox.ui.data.MemoryRegion;
 import com.rox.ui.data.MemorySource;
 import com.rox.ui.debugger.DebugTarget;
@@ -24,6 +25,8 @@ final class FakeNes implements MemorySource, DebugTarget {
     private final Random rng = new Random(6502);
 
     private final Object lock = new Object();
+    private final FrameTimes frameTimes = new FrameTimes("emu frames", 600);
+    private long simulatedFrames;
     private volatile boolean paused;
     private volatile long frames;
     private volatile double measuredFps;
@@ -73,6 +76,10 @@ final class FakeNes implements MemorySource, DebugTarget {
                 }
                 frame();
             }
+            frameTimes.record(System.nanoTime());
+            if (++simulatedFrames % 300 == 0) {
+                next += 30_000_000L; // a simulated 30ms hitch every ~5s, so the frame-timing graph has something to show
+            }
             windowFrames++;
             long now = System.nanoTime();
             if (now - windowStart > 500_000_000L) {
@@ -95,6 +102,11 @@ final class FakeNes implements MemorySource, DebugTarget {
     }
 
     // ---- DebugTarget ------------------------------------------------------------------------
+
+    @Override
+    public List<FrameTimes> frameTimings() {
+        return List.of(frameTimes);
+    }
 
     @Override
     public MemorySource memory() {
