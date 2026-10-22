@@ -8,6 +8,9 @@ import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.PaintMode;
 import io.github.humbleui.types.RRect;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Immediate-mode UI context. Call {@link #begin} once per frame, then draw widgets;
  * widgets return their interaction result directly.
@@ -23,6 +26,7 @@ public final class Ui {
     /** The widget holding the mouse (pressed on it and not yet released). */
     private String active;
     private String tooltip;
+    private final List<Runnable> overlays = new ArrayList<>();
     private float width, height;
 
     public Ui(Theme theme) {
@@ -41,6 +45,10 @@ public final class Ui {
     }
 
     public void end() {
+        for (Runnable overlay : overlays) {
+            overlay.run();
+        }
+        overlays.clear();
         if (tooltip != null) {
             drawTooltip(tooltip);
         }
@@ -75,6 +83,11 @@ public final class Ui {
 
     public void setTooltip(String text) {
         tooltip = text;
+    }
+
+    /** Draws {@code draw} after everything else this frame (under the tooltip), e.g. a decoration straddling two panels. */
+    public void overlay(Runnable draw) {
+        overlays.add(draw);
     }
 
     // ---- primitives --------------------------------------------------------------------------
@@ -168,6 +181,25 @@ public final class Ui {
         strokeRound(box, 5, on ? Theme.withAlpha(theme.accent, 0.6f) : hover ? theme.textFaint : theme.border);
         textCentred(box, label, theme.ui, on ? theme.accent : theme.text);
         return clicked;
+    }
+
+    /**
+     * A vertical scrollbar for {@code visible} of {@code total} units, scrolled to {@code offset}.
+     * Returns the offset to jump to while the thumb is dragged (centred on the mouse), else {@code offset}.
+     */
+    public float scrollbar(String id, Box track, float offset, float total, float visible) {
+        Box inner = track.inset(2, 0);
+        float max = Math.max(0, total - visible);
+        if (drag(id, track)) {
+            float f = (input.mouseY - track.y) / track.h;
+            offset = Math.clamp(f * total - visible / 2, 0, max);
+        }
+        fillRound(inner, 3, theme.panelRaised);
+        float thumbH = Math.min(inner.h, Math.max(24, inner.h * visible / Math.max(1, total)));
+        float thumbY = inner.y + (inner.h - thumbH) * (offset / Math.max(1, max));
+        boolean hot = isActive(id) || track.contains(input.mouseX, input.mouseY);
+        fillRound(new Box(inner.x, thumbY, inner.w, thumbH), 3, hot ? theme.textDim : theme.textFaint);
+        return offset;
     }
 
     /** A small label/value tile, e.g. a CPU register. */

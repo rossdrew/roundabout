@@ -109,7 +109,6 @@ public final class HexGrid {
             drawRow(ui, heat, row, box.y + r * ROW_HEIGHT - offset, box);
         }
         ui.unclip();
-        drawScrollbar(ui, scrollbar);
 
         if (hovered >= 0) {
             ui.setTooltip(tooltip(heat, hovered));
@@ -121,9 +120,9 @@ public final class HexGrid {
         if (body.contains(in.mouseX, in.mouseY) && in.scrollY != 0) {
             targetScroll = clampScroll(targetScroll - in.scrollY * 3);
         }
-        if (ui.drag("hex.scrollbar", scrollbar)) {
-            float f = (in.mouseY - scrollbar.y) / scrollbar.h;
-            targetScroll = clampScroll(f * rows - visibleRows / 2f);
+        float dragged = ui.scrollbar("hex.scrollbar", scrollbar, scroll, rows, visibleRows);
+        if (dragged != scroll) {
+            targetScroll = clampScroll(dragged);
             scroll = targetScroll;
         }
         if (in.mousePressed && ui.hovered(body)) {
@@ -238,16 +237,6 @@ public final class HexGrid {
             boolean printable = value >= 0x20 && value < 0x7F;
             ui.canvas.drawTextLine(asciiText[value], ax, baseline, ui.paint(printable ? t.textDim : t.textFaint));
         }
-    }
-
-    private void drawScrollbar(Ui ui, Box track) {
-        Theme t = ui.theme;
-        Box inner = track.inset(2, 0);
-        ui.fillRound(inner, 3, t.panelRaised);
-        float thumbH = Math.max(24, inner.h * visibleRows / rows);
-        float thumbY = inner.y + (inner.h - thumbH) * (scroll / Math.max(1, rows - visibleRows));
-        boolean hot = ui.isActive("hex.scrollbar") || track.contains(ui.input.mouseX, ui.input.mouseY);
-        ui.fillRound(new Box(inner.x, thumbY, inner.w, thumbH), 3, hot ? t.textDim : t.textFaint);
     }
 
     private String tooltip(MemoryHeat heat, int address) {

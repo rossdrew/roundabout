@@ -28,6 +28,10 @@ public final class Box {
         return y + h;
     }
 
+    public float centerX() {
+        return x + w / 2;
+    }
+
     public float centerY() {
         return y + h / 2;
     }

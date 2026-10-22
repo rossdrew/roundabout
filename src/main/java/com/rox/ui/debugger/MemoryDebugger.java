@@ -6,41 +6,25 @@ import com.rox.ui.Ui;
 import com.rox.ui.data.FrameTimes;
 import com.rox.ui.data.FrameTimingGraph;
 import com.rox.ui.data.Graphs;
-import com.rox.ui.data.HexGrid;
-import com.rox.ui.data.MemoryHeat;
-import com.rox.ui.data.MemoryMap;
 import com.rox.ui.data.MemoryRegion;
 import com.rox.ui.data.RingSeries;
 import com.rox.ui.window.GlfwWindow;
 import com.rox.ui.window.Input;
 import io.github.humbleui.skija.Canvas;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
- * Live memory debugger window over a {@link DebugTarget}: memory map, heat-coloured hex grid,
- * CPU registers, watches with history graphs, and run controls.
+ * Live debugger window over a {@link DebugTarget}: a {@link MemoryPanel}, CPU registers,
+ * frame timing, and run controls.
  */
 public final class MemoryDebugger {
-    private static final int HISTORY = 600; // 10s at 60fps
-
-    private record Watch(String label, int address, RingSeries history) {
-        Watch(String label, int address) {
-            this(label, address, new RingSeries(HISTORY));
-        }
-    }
-
     private final DebugTarget target;
     private final String title;
     private final Ui ui = new Ui(Theme.dark());
-    private final MemoryHeat heat;
-    private final HexGrid hex;
-    private final MemoryMap map;
-    private final List<Watch> watches = new ArrayList<>();
-    private int selectedWatch;
+    private final MemoryPanel memory;
 
     private final RingSeries frameMs = new RingSeries(120);
     private final RingSeries writesPerFrame = new RingSeries(120);
@@ -51,12 +35,7 @@ public final class MemoryDebugger {
     public MemoryDebugger(DebugTarget target, String title) {
         this.target = target;
         this.title = title;
-        heat = new MemoryHeat(target.memory(), 0.35f);
-        hex = new HexGrid(target.memory().size(), target.regions());
-        map = new MemoryMap(target.regions());
-        for (DebugTarget.Label label : target.labels()) {
-            watches.add(new Watch(label.name(), label.address()));
-        }
+        memory = new MemoryPanel(target.memory(), target.regions(), target.labels());
     }
 
     /** Opens the window and blocks until it is closed (by the user or {@link #close()}). */
@@ -86,11 +65,8 @@ public final class MemoryDebugger {
         float dt = Math.min(0.1f, (start - lastFrame) / 1e9f);
         lastFrame = start;
 
-        heat.update(dt);
-        writesPerFrame.add(heat.changedLastFrame());
-        for (Watch w : watches) {
-            w.history().add(heat.value(w.address()));
-        }
+        memory.update(dt);
+        writesPerFrame.add(memory.heat().changedLastFrame());
         for (FrameTimes times : target.frameTimings()) {
             times.update();
         }
@@ -105,34 +81,16 @@ public final class MemoryDebugger {
         statusBar(screen.cutBottom(28));
         Box body = screen.inset(10, 6);
 
-        Box left = body.cutLeft(200);
-        body.cutLeft(10);
         Box right = body.cutRight(340);
         body.cutRight(10);
-
-        int jump = map.draw(ui, ui.panel(left, "Memory map"), heat, hex.firstVisibleAddress(), hex.lastVisibleAddress());
-        if (jump >= 0) {
-            hex.scrollTo(jump);
-        }
-
+        CpuPanel.draw(ui, right.cutTop(150), target.cpu());
         List<FrameTimes> timings = target.frameTimings();
         if (!timings.isEmpty()) {
-            Box timing = body.cutBottom(40 + 110 * timings.size());
-            body.cutBottom(10);
-            frameTiming(timing, timings);
+            right.cutTop(10);
+            frameTiming(right.cutTop(40 + 150 * timings.size()), timings);
         }
 
-        hex.draw(ui, ui.panel(body, String.format("Memory  ·  $0000 – $%04X", heat.size() - 1)), heat, dt);
-        if (hex.activated() >= 0) {
-            addWatch(hex.activated());
-        }
-
-        registers(right.cutTop(150));
-        right.cutTop(10);
-        Box graph = right.cutBottom(230);
-        right.cutBottom(10);
-        watchList(right);
-        watchGraph(graph);
+        memory.draw(ui, body, dt);
 
         ui.end();
         frameMs.add((System.nanoTime() - start) / 1e6f);
@@ -148,13 +106,7 @@ public final class MemoryDebugger {
         if (input.keyPressed(GLFW_KEY_I) && target.isPaused()) {
             target.stepInstruction();
         }
-        if (input.keyPressed(GLFW_KEY_W)) {
-            addWatch(hex.selected());
-        }
-        if (input.keyPressed(GLFW_KEY_DELETE) && !watches.isEmpty()) {
-            watches.remove(selectedWatch);
-            selectedWatch = Math.max(0, Math.min(selectedWatch, watches.size() - 1));
-        }
+        memory.handleKeys(input);
     }
 
     private void togglePause() {
@@ -165,18 +117,6 @@ public final class MemoryDebugger {
         }
     }
 
-    private void addWatch(int address) {
-        for (int i = 0; i < watches.size(); i++) {
-            if (watches.get(i).address() == address) {
-                selectedWatch = i;
-                return;
-            }
-        }
-        MemoryRegion region = MemoryRegion.find(target.regions(), address);
-        watches.add(new Watch(region == null ? "Watch" : region.name(), address));
-        selectedWatch = watches.size() - 1;
-    }
-
     // ---- sections -----------------------------------------------------------------------------
 
     private void topBar(Box bar) {
@@ -185,9 +125,7 @@ public final class MemoryDebugger {
         ui.line(bar.x, bar.bottom() - 0.5f, bar.right(), bar.bottom() - 0.5f, t.border);
         Box row = bar.inset(14, 9);
 
-        Box brand = row.cutLeft(170);
-        float w = ui.text(brand, "roxUI", t.uiBold, t.accent);
-        ui.text(new Box(brand.x + w + 8, brand.y, 120, brand.h), "memory debugger", t.ui, t.textDim);
+        ui.text(row.cutLeft(70), "roxUI", t.uiBold, t.accent);
 
         boolean paused = target.isPaused();
         if (ui.button("run", row.cutLeft(92), paused ? "▶  Run" : "❚❚  Pause", paused)) {
@@ -224,75 +162,15 @@ public final class MemoryDebugger {
         ui.fill(bar, t.panel);
         ui.line(bar.x, bar.y + 0.5f, bar.right(), bar.y + 0.5f, t.border);
         Box row = bar.inset(14, 0);
-        int address = hex.hovered() >= 0 ? hex.hovered() : hex.selected();
-        int v = heat.value(address);
+        int address = memory.focusAddress();
+        int v = memory.heat().value(address);
         MemoryRegion region = MemoryRegion.find(target.regions(), address);
         String bin = String.format("%8s", Integer.toBinaryString(v)).replace(' ', '0');
         ui.text(row, String.format("$%04X  %-14s $%02X  %3d  %%%s   %s",
                 address, region == null ? "" : region.name(), v, v, bin,
                 target.memory().isEditable(address) ? "writable" : "read-only"), t.mono, t.textDim);
-        ui.textRight(row, "Space run/pause   F step frame   I step instr   ↑↓ PgUp PgDn navigate   W / double-click watch   Del unwatch",
+        ui.textRight(row, "Space run/pause   F step frame   I step instr   ↑↓ PgUp PgDn navigate   W / double-click watch   double-click watch to jump   Del unwatch",
                 t.uiSmall, t.textFaint);
-    }
-
-    private void registers(Box area) {
-        Theme t = ui.theme;
-        DebugTarget.CpuState cpu = target.cpu();
-        Box content = ui.panel(area, "CPU");
-        Box top = content.cutTop(48);
-        float unit = (top.w - 5 * 6) / 6.4f;
-        String[][] regs = {
-                {"PC", String.format("%04X", cpu.pc())}, {"A", String.format("%02X", cpu.a())},
-                {"X", String.format("%02X", cpu.x())}, {"Y", String.format("%02X", cpu.y())},
-                {"SP", String.format("%02X", cpu.sp())}, {"P", String.format("%02X", cpu.p())}};
-        for (int i = 0; i < regs.length; i++) {
-            Box cell = top.cutLeft(i == 0 ? unit * 1.4f : unit);
-            ui.readout(cell, regs[i][0], regs[i][1], i == 0 ? t.accent : t.text);
-            top.cutLeft(6);
-        }
-        content.cutTop(10);
-        Box flags = content.cutTop(26);
-        String names = "NV-BDIZC";
-        float fw = (flags.w - 7 * 4) / 8;
-        for (int i = 0; i < 8; i++) {
-            ui.chip(flags.cutLeft(fw), String.valueOf(names.charAt(i)), (cpu.p() & (0x80 >> i)) != 0);
-            flags.cutLeft(4);
-        }
-    }
-
-    private void watchList(Box area) {
-        Theme t = ui.theme;
-        Box content = ui.panel(area, "Watches");
-        if (watches.isEmpty()) {
-            ui.text(content.cutTop(20), "Double-click a byte, or press W, to watch it", t.uiSmall, t.textFaint);
-            return;
-        }
-        ui.clip(content);
-        for (int i = 0; i < watches.size(); i++) {
-            Watch w = watches.get(i);
-            Box row = content.cutTop(38);
-            if (row.h <= 0) break;
-            boolean selected = i == selectedWatch;
-            if (ui.clicked("watch" + i, row)) {
-                selectedWatch = i;
-                hex.scrollTo(w.address());
-            }
-            if (selected || ui.hovered(row)) {
-                ui.fillRound(row, 5, selected ? Theme.mix(t.panel, t.accent, 0.12f) : t.panelRaised);
-            }
-            Box inner = row.inset(10, 4);
-            Box spark = inner.cutRight(100).inset(0, 4);
-            Graphs.sparkline(ui, spark, w.history(), 0, 255, selected ? t.accent : t.textDim);
-            inner.cutRight(10);
-            int v = heat.value(w.address());
-            Box value = inner.cutRight(40);
-            float h = heat.heat(w.address());
-            ui.textRight(value, String.format("%02X", v), t.monoLarge, Theme.mix(t.text, t.warn, h));
-            ui.text(inner.cutTop(16), w.label(), t.ui, t.text);
-            ui.text(inner, String.format("$%04X", w.address()), t.uiSmall, t.textDim);
-            content.cutTop(2);
-        }
-        ui.unclip();
     }
 
     private void frameTiming(Box area, List<FrameTimes> timings) {
@@ -305,16 +183,5 @@ public final class MemoryDebugger {
             FrameTimingGraph.draw(ui, content.cutTop(rowH), timings.get(i), target.frameBudgetMs(),
                     target.frameBudgetMs() / 1000);
         }
-    }
-
-    private void watchGraph(Box area) {
-        Theme t = ui.theme;
-        if (watches.isEmpty()) {
-            ui.panel(area, "History");
-            return;
-        }
-        Watch w = watches.get(Math.min(selectedWatch, watches.size() - 1));
-        Box content = ui.panel(area, String.format("%s  ·  $%04X  ·  last 10s", w.label(), w.address()));
-        Graphs.lineGraph(ui, content, w.history(), 0, 255, t.accent, 1 / 60f);
     }
 }
