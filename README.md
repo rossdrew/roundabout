@@ -1,3 +1,4 @@
+![Roundabout](resources/roundabout-logo-200.png)
 # Roundabout
 
 What you lose on the Swings, you gain on the Roundabout: a GPU-rendered, immediate-mode UI toolkit for real-time debugging tools (Skija + LWJGL/GLFW), dark mode first.
@@ -46,3 +47,5 @@ dependencies {
 Skija, LWJGL and the Linux x64 natives come with it. Run the app with `--enable-native-access=ALL-UNNAMED`.
 
 To release: bump `version` in `build.gradle.kts`, merge to `main`, and publish a GitHub release tagged `v<version>`; the `Publish` workflow tests and publishes it. `./gradlew publishToMavenLocal` installs a build locally for trying changes out.
+
+![Screenshot running inside EmuRox](/resources/state_221026.png)
