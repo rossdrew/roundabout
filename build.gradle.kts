@@ -36,12 +36,12 @@ dependencies {
 }
 
 application {
-    mainClass = "com.rox.ui.demo.DebugWindowDemo"
+    mainClass = "com.rox.roundabout.demo.DebugWindowDemo"
     applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
 tasks.named<JavaExec>("run") {
-    listOf("roxui.screenshot", "roxui.screenshot.frame").forEach { key ->
+    listOf("roundabout.screenshot", "roundabout.screenshot.frame").forEach { key ->
         System.getProperty(key)?.let { systemProperty(key, it) }
     }
 }
