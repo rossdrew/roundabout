@@ -132,7 +132,10 @@ final class FakeNes implements MemorySource, DebugTarget {
 
     @Override
     public CpuState cpu() {
-        return new CpuState(pc, a, x, y, sp, p);
+        return new CpuState(
+                List.of(new Register("PC", pc, 16), new Register("A", a, 8), new Register("X", x, 8),
+                        new Register("Y", y, 8), new Register("SP", sp, 8), new Register("P", p, 8)),
+                Flag.fromBits("NV-BDIZC", p));
     }
 
     @Override
