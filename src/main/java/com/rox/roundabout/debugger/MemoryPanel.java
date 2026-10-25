@@ -157,37 +157,41 @@ public final class MemoryPanel {
         ui.clip(content);
         Box list = new Box(content.x, content.y - watchScroll, content.w, total);
         for (int i = 0; i < watches.size(); i++) {
-            Watch w = watches.get(i);
             Box row = list.cutTop(WATCH_ROW - 2);
             list.cutTop(2);
-            if (row.bottom() < content.y || row.y > content.bottom()) {
-                continue;
+            if (row.bottom() >= content.y && row.y <= content.bottom()) {
+                watchRow(ui, i, row, content);
             }
-            boolean selected = i == selectedWatch;
-            float hitTop = Math.max(row.y, content.y);
-            Box hit = new Box(row.x, hitTop, row.w, Math.min(row.bottom(), content.bottom()) - hitTop);
-            if (ui.clicked("watch" + i, hit)) {
-                selectedWatch = i;
-            }
-            // double-click flags the press, so check it while the row holds the mouse
-            if (ui.input.doubleClicked && ui.isActive("watch" + i)) {
-                hex.scrollTo(w.address());
-            }
-            if (selected || ui.hovered(hit)) {
-                ui.fillRound(row, 5, selected ? Theme.mix(t.panel, t.accent, 0.12f) : t.panelRaised);
-            }
-            Box inner = row.inset(10, 4);
-            Box spark = inner.cutRight(100).inset(0, 4);
-            Graphs.sparkline(ui, spark, w.history(), 0, 255, selected ? t.accent : t.textDim);
-            inner.cutRight(10);
-            int v = heat.value(w.address());
-            Box value = inner.cutRight(40);
-            float h = heat.heat(w.address());
-            ui.textRight(value, String.format("%02X", v), t.monoLarge, Theme.mix(t.text, t.warn, h));
-            ui.text(inner.cutTop(16), w.label(), t.ui, t.text);
-            ui.text(inner, String.format("$%04X", w.address()), t.uiSmall, t.textDim);
         }
         ui.unclip();
+    }
+
+    private void watchRow(Ui ui, int index, Box row, Box visible) {
+        Theme t = ui.theme;
+        Watch watch = watches.get(index);
+        boolean selected = index == selectedWatch;
+        float hitTop = Math.max(row.y, visible.y);
+        Box hit = new Box(row.x, hitTop, row.w, Math.min(row.bottom(), visible.bottom()) - hitTop);
+        if (ui.clicked("watch" + index, hit)) {
+            selectedWatch = index;
+        }
+        // double-click flags the press, so check it while the row holds the mouse
+        if (ui.input.doubleClicked && ui.isActive("watch" + index)) {
+            hex.scrollTo(watch.address());
+        }
+        if (selected || ui.hovered(hit)) {
+            ui.fillRound(row, 5, selected ? Theme.mix(t.panel, t.accent, 0.12f) : t.panelRaised);
+        }
+        Box inner = row.inset(10, 4);
+        Box spark = inner.cutRight(100).inset(0, 4);
+        Graphs.sparkline(ui, spark, watch.history(), 0, 255, selected ? t.accent : t.textDim);
+        inner.cutRight(10);
+        int value = heat.value(watch.address());
+        float valueHeat = heat.heat(watch.address());
+        Box valueBox = inner.cutRight(40);
+        ui.textRight(valueBox, String.format("%02X", value), t.monoLarge, Theme.mix(t.text, t.warn, valueHeat));
+        ui.text(inner.cutTop(16), watch.label(), t.ui, t.text);
+        ui.text(inner, String.format("$%04X", watch.address()), t.uiSmall, t.textDim);
     }
 
     private void watchGraph(Ui ui, Box area) {
