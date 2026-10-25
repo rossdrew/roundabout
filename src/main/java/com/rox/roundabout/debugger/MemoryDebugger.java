@@ -13,6 +13,7 @@ import com.rox.roundabout.window.Input;
 import io.github.humbleui.skija.Canvas;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -101,11 +102,10 @@ public final class MemoryDebugger {
         if (input.keyPressed(GLFW_KEY_SPACE)) {
             togglePause();
         }
-        if (input.keyPressed(GLFW_KEY_F) && target.isPaused()) {
-            target.stepFrame();
-        }
-        if (input.keyPressed(GLFW_KEY_I) && target.isPaused()) {
-            target.stepInstruction();
+        for (DebugTarget.Step step : target.steps()) {
+            if (step.key() != GLFW_KEY_UNKNOWN && input.keyPressed(step.key()) && target.isPaused()) {
+                step.run().run();
+            }
         }
         memory.handleKeys(input);
     }
@@ -132,13 +132,12 @@ public final class MemoryDebugger {
         if (ui.button("run", row.cutLeft(92), paused ? "▶  Run" : "❚❚  Pause", paused)) {
             togglePause();
         }
-        row.cutLeft(8);
-        if (ui.button("step", row.cutLeft(100), "Step frame") && paused) {
-            target.stepFrame();
-        }
-        row.cutLeft(8);
-        if (ui.button("stepi", row.cutLeft(100), "Step instr") && paused) {
-            target.stepInstruction();
+        for (DebugTarget.Step step : target.steps()) {
+            row.cutLeft(8);
+            float w = Math.max(100, t.ui.measureTextWidth(step.label()) + 28);
+            if (ui.button("step:" + step.label(), row.cutLeft(w), step.label()) && paused) {
+                step.run().run();
+            }
         }
         row.cutLeft(16);
         Box state = row.cutLeft(380);
@@ -170,8 +169,19 @@ public final class MemoryDebugger {
         ui.text(row, String.format("$%04X  %-14s $%02X  %3d  %%%s   %s",
                 address, region == null ? "" : region.name(), v, v, bin,
                 target.memory().isEditable(address) ? "writable" : "read-only"), t.mono, t.textDim);
-        ui.textRight(row, "Space run/pause   F step frame   I step instr   ↑↓ PgUp PgDn navigate   W / double-click watch   double-click watch to jump   Del unwatch",
-                t.uiSmall, t.textFaint);
+        ui.textRight(row, keyHints(target.steps()), t.uiSmall, t.textFaint);
+    }
+
+    static String keyHints(List<DebugTarget.Step> steps) {
+        StringBuilder hints = new StringBuilder("Space run/pause");
+        for (DebugTarget.Step step : steps) {
+            if (step.key() != GLFW_KEY_UNKNOWN) {
+                hints.append("   ").append(Input.keyName(step.key()))
+                        .append(' ').append(step.label().toLowerCase(Locale.ROOT));
+            }
+        }
+        return hints.append("   ↑↓ PgUp PgDn navigate   W / double-click watch   double-click watch to jump   Del unwatch")
+                .toString();
     }
 
     private void frameTiming(Box area, List<FrameTimes> timings) {

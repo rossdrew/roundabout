@@ -12,7 +12,7 @@ Swing is great for forms, for dynamic data like memory activity in an emulator i
 
 The memory map and the watches (list and history) are docked to the hex grid; click the link between two panels (or a folded strip) to fold or unfold one.
 
-Keys: `Space` run/pause · `F` step frame · `I` step instruction · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it.
+Keys: `Space` run/pause · each of the target's steps on its own key (the demo: `F` step frame, `I` step instruction) · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it.
 
 Embedding: implement `com.rox.roundabout.debugger.DebugTarget` and call `new MemoryDebugger(target, title).run()` (blocks; `close()` from any thread). The parts are reusable on their own: `MemoryPanel` (map + hex + watches over a `MemorySource`), `CpuPanel`, and `Dock` for any foldable, linked panel. EmuRoxLab does this in `NesRoundaboutTarget`.
 

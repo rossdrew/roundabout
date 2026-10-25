@@ -9,11 +9,17 @@ import com.rox.roundabout.debugger.NesMemoryMap;
 import java.util.List;
 import java.util.Random;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_I;
+
 /**
  * Stand-in for the emulator: a 64K NES-like address space with a background thread that
  * writes plausible game activity at 60 frames per second.
  */
 final class FakeNes implements MemorySource, DebugTarget {
+    // the fake has no instruction granularity, so both advance a frame
+    private final List<Step> steps = List.of(new Step("Step frame", GLFW_KEY_F, this::stepFrame),
+            new Step("Step instr", GLFW_KEY_I, this::stepFrame));
     private static final int SIZE = 0x10000;
 
 
@@ -149,8 +155,8 @@ final class FakeNes implements MemorySource, DebugTarget {
     }
 
     @Override
-    public void stepInstruction() {
-        stepFrame(); // the fake has no instruction granularity
+    public List<Step> steps() {
+        return steps;
     }
 
     @Override
@@ -172,8 +178,7 @@ final class FakeNes implements MemorySource, DebugTarget {
         }
     }
 
-    @Override
-    public void stepFrame() {
+    private void stepFrame() {
         synchronized (lock) {
             if (paused) {
                 frame();
