@@ -16,9 +16,11 @@ public final class MemoryMap {
     private static final float HEAT_WIDTH = 46;
 
     private final List<MemoryRegion> regions;
+    private final AddressFormat format;
 
-    public MemoryMap(List<MemoryRegion> regions) {
+    public MemoryMap(List<MemoryRegion> regions, AddressFormat format) {
         this.regions = regions;
+        this.format = format;
     }
 
     /** Returns the address the user clicked/dragged to, or -1. */
@@ -43,7 +45,8 @@ public final class MemoryMap {
         } else if (containerBox.contains(ui.input.mouseX, ui.input.mouseY) && ui.hovered(containerBox)) {
             int a = addressAt(bandY, ui.input.mouseY);
             MemoryRegion r = MemoryRegion.find(regions, a);
-            ui.setTooltip(String.format("$%04X%n%s  $%04X-$%04X", a, r.name(), r.start(), r.end()));
+            ui.setTooltip(String.format("%s%n%s  %s-%s", format.address(a), r.name(),
+                    format.address(r.start()), format.address(r.end())));
         }
         return target;
     }
@@ -60,7 +63,7 @@ public final class MemoryMap {
         ui.text(bandLabel, region.name(), t.uiSmall, hover ? t.text : Theme.mix(t.textDim, region.colour(), 0.35f));
         if (memoryBand.h >= 34) {
             final Box bandRangeLabel = new Box(bandLabel.x, bandLabel.bottom(), bandLabel.w, 14);
-            ui.text(bandRangeLabel, String.format("$%04X", region.start()), t.uiSmall, t.textFaint);
+            ui.text(bandRangeLabel, format.address(region.start()), t.uiSmall, t.textFaint);
         }
 
         // peak heat per pixel row

@@ -10,6 +10,7 @@ import io.github.humbleui.types.RRect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Immediate-mode UI context. Call {@link #begin} once per frame, then draw widgets;
@@ -161,9 +162,16 @@ public final class Ui {
         }
         Box content = box.copy();
         Box header = content.cutTop(28).inset(10, 0);
-        text(header, title.toUpperCase(), theme.uiSmall, theme.textDim);
+        text(header, heading(title), theme.uiSmall, theme.textDim);
         line(box.x + 1, content.y, box.right() - 1, content.y, theme.border);
         return content.inset(8);
+    }
+
+    /** Upper-cases a panel title's name, leaving any details after the first "  ·  " (addresses, units) as given. */
+    static String heading(String title) {
+        int details = title.indexOf("  ·  ");
+        return details < 0 ? title.toUpperCase(Locale.ROOT)
+                : title.substring(0, details).toUpperCase(Locale.ROOT) + title.substring(details);
     }
 
     public boolean button(String id, Box box, String label) {

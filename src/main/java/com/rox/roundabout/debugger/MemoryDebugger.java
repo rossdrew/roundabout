@@ -3,6 +3,7 @@ package com.rox.roundabout.debugger;
 import com.rox.roundabout.Box;
 import com.rox.roundabout.Theme;
 import com.rox.roundabout.Ui;
+import com.rox.roundabout.data.AddressFormat;
 import com.rox.roundabout.data.FrameTimes;
 import com.rox.roundabout.data.FrameTimingGraph;
 import com.rox.roundabout.data.Graphs;
@@ -36,7 +37,7 @@ public final class MemoryDebugger {
     public MemoryDebugger(DebugTarget target, String title) {
         this.target = target;
         this.title = title;
-        memory = new MemoryPanel(target.memory(), target.regions(), target.labels());
+        memory = new MemoryPanel(target.memory(), target.regions(), target.labels(), target.numberStyle());
     }
 
     /** Opens the window and blocks until it is closed (by the user or {@link #close()}). */
@@ -165,9 +166,9 @@ public final class MemoryDebugger {
         int address = memory.focusAddress();
         int v = memory.heat().value(address);
         MemoryRegion region = MemoryRegion.find(target.regions(), address);
-        String bin = String.format("%8s", Integer.toBinaryString(v)).replace(' ', '0');
-        ui.text(row, String.format("$%04X  %-14s $%02X  %3d  %%%s   %s",
-                address, region == null ? "" : region.name(), v, v, bin,
+        AddressFormat format = memory.format();
+        ui.text(row, String.format("%s  %-14s %s  %3d  %s   %s", format.address(address),
+                region == null ? "" : region.name(), format.value(v), v, format.binary(v),
                 target.memory().isEditable(address) ? "writable" : "read-only"), t.mono, t.textDim);
         ui.textRight(row, keyHints(target.steps()), t.uiSmall, t.textFaint);
     }

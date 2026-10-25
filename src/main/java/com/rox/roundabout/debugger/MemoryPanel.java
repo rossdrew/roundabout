@@ -4,6 +4,7 @@ import com.rox.roundabout.Box;
 import com.rox.roundabout.Dock;
 import com.rox.roundabout.Theme;
 import com.rox.roundabout.Ui;
+import com.rox.roundabout.data.AddressFormat;
 import com.rox.roundabout.data.Graphs;
 import com.rox.roundabout.data.HexGrid;
 import com.rox.roundabout.data.MemoryHeat;
@@ -35,6 +36,7 @@ public final class MemoryPanel {
 
     private final MemorySource memory;
     private final List<MemoryRegion> regions;
+    private final AddressFormat format;
     private final MemoryHeat heat;
     private final HexGrid hex;
     private final MemoryMap map;
@@ -48,11 +50,17 @@ public final class MemoryPanel {
     private final Dock historyDock = new Dock("History", Dock.Side.RIGHT);
 
     public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<DebugTarget.Label> labels) {
+        this(memory, regions, labels, AddressFormat.Style.C);
+    }
+
+    public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<DebugTarget.Label> labels,
+                       AddressFormat.Style style) {
         this.memory = memory;
         this.regions = regions;
+        format = AddressFormat.forSize(memory.size(), style);
         heat = new MemoryHeat(memory, 0.35f);
-        hex = new HexGrid(memory.size(), regions);
-        map = new MemoryMap(regions);
+        hex = new HexGrid(memory.size(), regions, format);
+        map = new MemoryMap(regions, format);
         for (DebugTarget.Label label : labels) {
             watches.add(new Watch(label.name(), label.address()));
         }
@@ -60,6 +68,10 @@ public final class MemoryPanel {
 
     public MemoryHeat heat() {
         return heat;
+    }
+
+    public AddressFormat format() {
+        return format;
     }
 
     public MemorySource memory() {
@@ -101,7 +113,7 @@ public final class MemoryPanel {
         }
 
         Box watchRow = watchDock.cut(ui, main, 230);
-        hex.draw(ui, ui.panel(main, String.format("Memory  ·  $0000 – $%04X", heat.size() - 1)), heat, dt);
+        hex.draw(ui, ui.panel(main, "Memory  ·  " + format.address(0) + " – " + format.address(heat.size() - 1)), heat, dt);
         if (hex.activated() >= 0) {
             addWatch(hex.activated());
         }
@@ -191,7 +203,7 @@ public final class MemoryPanel {
         Box valueBox = inner.cutRight(40);
         ui.textRight(valueBox, String.format("%02X", value), t.monoLarge, Theme.mix(t.text, t.warn, valueHeat));
         ui.text(inner.cutTop(16), watch.label(), t.ui, t.text);
-        ui.text(inner, String.format("$%04X", watch.address()), t.uiSmall, t.textDim);
+        ui.text(inner, format.address(watch.address()), t.uiSmall, t.textDim);
     }
 
     private void watchGraph(Ui ui, Box area) {
@@ -201,7 +213,8 @@ public final class MemoryPanel {
             return;
         }
         Watch w = watches.get(Math.min(selectedWatch, watches.size() - 1));
-        Box content = ui.panel(area, String.format("%s  ·  $%04X  ·  last 10s", w.label(), w.address()));
-        Graphs.lineGraph(ui, content, w.history(), 0, 255, t.accent, 1 / 60f);
+        Box content = ui.panel(area, w.label() + "  ·  " + format.address(w.address()) + "  ·  last 10s");
+        Graphs.lineGraph(ui, content, w.history(), 0, 255, t.accent, 1 / 60f,
+                v -> String.format("%02X", (int) v), v -> format.value((int) v) + "  " + (int) v);
     }
 }

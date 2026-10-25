@@ -17,7 +17,7 @@ public final class HexGrid {
     private static final int BYTES_PER_ROW = 16;
     private static final float ROW_HEIGHT = 20;
     private static final float HEADER_HEIGHT = 24;
-    private static final float GUTTER_WIDTH = 70;
+    private static final float GUTTER_CHAR = 9; // mono, plus the gutter's 10px inset and a gap
     private static final float CELL_WIDTH = 26;
     private static final float GROUP_GAP = 8;
     private static final float ASCII_GAP = 18;
@@ -25,6 +25,8 @@ public final class HexGrid {
     private static final float SCROLLBAR_WIDTH = 8;
 
     private final List<MemoryRegion> regions;
+    private final AddressFormat format;
+    private final float gutterWidth;
     private final int rows;
     private TextLine[] hexText;
     private TextLine[] asciiText;
@@ -36,13 +38,15 @@ public final class HexGrid {
     private int hovered = -1;
     private int activated = -1;
 
-    public HexGrid(int size, List<MemoryRegion> regions) {
+    public HexGrid(int size, List<MemoryRegion> regions, AddressFormat format) {
         this.rows = size / BYTES_PER_ROW;
         this.regions = regions;
+        this.format = format;
+        this.gutterWidth = 24 + GUTTER_CHAR * format.address(0).length();
     }
 
-    public static float preferredWidth() {
-        return GUTTER_WIDTH + BYTES_PER_ROW * CELL_WIDTH + GROUP_GAP + ASCII_GAP
+    public float preferredWidth() {
+        return gutterWidth + BYTES_PER_ROW * CELL_WIDTH + GROUP_GAP + ASCII_GAP
                 + BYTES_PER_ROW * ASCII_WIDTH + SCROLLBAR_WIDTH + 100;
     }
 
@@ -159,7 +163,7 @@ public final class HexGrid {
     }
 
     private int columnAt(Box body, float mx) {
-        float x = mx - body.x - GUTTER_WIDTH;
+        float x = mx - body.x - gutterWidth;
         if (x < 0) return -1;
         if (x < 8 * CELL_WIDTH) return (int) (x / CELL_WIDTH);
         x -= 8 * CELL_WIDTH + GROUP_GAP;
@@ -169,12 +173,12 @@ public final class HexGrid {
         return -1;
     }
 
-    private static float cellX(Box body, int col) {
-        return body.x + GUTTER_WIDTH + col * CELL_WIDTH + (col >= 8 ? GROUP_GAP : 0);
+    private float cellX(Box body, int col) {
+        return body.x + gutterWidth + col * CELL_WIDTH + (col >= 8 ? GROUP_GAP : 0);
     }
 
-    private static float asciiX(Box body, int col) {
-        return body.x + GUTTER_WIDTH + BYTES_PER_ROW * CELL_WIDTH + GROUP_GAP + ASCII_GAP + col * ASCII_WIDTH;
+    private float asciiX(Box body, int col) {
+        return body.x + gutterWidth + BYTES_PER_ROW * CELL_WIDTH + GROUP_GAP + ASCII_GAP + col * ASCII_WIDTH;
     }
 
     private void drawHeader(Ui ui, Box header, int focusCol) {
@@ -205,8 +209,8 @@ public final class HexGrid {
             ui.text(label, region.name(), t.uiSmall, Theme.withAlpha(regionColour, 0.8f));
         }
         ui.fill(new Box(body.x, y + 2, 3, ROW_HEIGHT - 4), Theme.withAlpha(regionColour, 0.7f));
-        Box gutter = new Box(body.x + 10, y, GUTTER_WIDTH - 10, ROW_HEIGHT);
-        ui.text(gutter, String.format("$%04X", base), t.mono, selectedRow ? t.text : t.textDim);
+        Box gutter = new Box(body.x + 10, y, gutterWidth - 10, ROW_HEIGHT);
+        ui.text(gutter, format.address(base), t.mono, selectedRow ? t.text : t.textDim);
 
         float baseline = Ui.baseline(new Box(0, y, 0, ROW_HEIGHT), t.mono);
         for (int c = 0; c < BYTES_PER_ROW; c++) {
@@ -242,10 +246,8 @@ public final class HexGrid {
     private String tooltip(MemoryHeat heat, int address) {
         int v = heat.value(address);
         MemoryRegion region = MemoryRegion.find(regions, address);
-        String bin = String.format("%8s", Integer.toBinaryString(v)).replace(' ', '0');
-        return String.format("$%04X  %s%n$%02X  %d  %%%s %s%nwrites %d",
-                address, region == null ? "" : region.name(),
-                v, v, bin.substring(0, 4), bin.substring(4), heat.writes(address));
+        return String.format("%s  %s%n%s  %d  %s%nwrites %d", format.address(address),
+                region == null ? "" : region.name(), format.value(v), v, format.binary(v), heat.writes(address));
     }
 
     private void ensureText(Theme t) {

@@ -1,5 +1,6 @@
 package com.rox.roundabout.debugger;
 
+import com.rox.roundabout.data.AddressFormat;
 import com.rox.roundabout.data.FrameTimes;
 import com.rox.roundabout.data.MemoryRegion;
 import com.rox.roundabout.data.MemorySource;
@@ -66,6 +67,11 @@ public interface DebugTarget {
     MemorySource memory();
 
     List<MemoryRegion> regions();
+
+    /** How addresses and values are written; {@code 0x} prefixes unless overridden. */
+    default AddressFormat.Style numberStyle() {
+        return AddressFormat.Style.C;
+    }
 
     default List<Label> labels() {
         return List.of();
