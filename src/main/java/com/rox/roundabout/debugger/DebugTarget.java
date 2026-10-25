@@ -4,13 +4,47 @@ import com.rox.roundabout.data.FrameTimes;
 import com.rox.roundabout.data.MemoryRegion;
 import com.rox.roundabout.data.MemorySource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** What {@link MemoryDebugger} inspects and controls - implemented by an emulator adapter. */
 public interface DebugTarget {
 
-    /** 6502-style registers; {@code p} is the NV-BDIZC status byte. */
-    record CpuState(int pc, int a, int x, int y, int sp, int p) {
+    /** The registers and flags to show, in display order; the first register is highlighted (e.g. the PC). */
+    record CpuState(List<Register> registers, List<Flag> flags) {
+        public CpuState {
+            registers = List.copyOf(registers);
+            flags = List.copyOf(flags);
+        }
+    }
+
+    /** A register shown as {@code bits / 4} hex digits; bits above {@code bits} are ignored. */
+    record Register(String name, long value, int bits) {
+        public Register {
+            if (bits < 1 || bits > 64) {
+                throw new IllegalArgumentException("bits must be 1-64: " + bits);
+            }
+        }
+
+        public String hex() {
+            long mask = bits == 64 ? -1L : (1L << bits) - 1;
+            return String.format("%0" + (bits + 3) / 4 + "X", value & mask);
+        }
+    }
+
+    record Flag(String name, boolean set) {
+        /**
+         * One flag per character of {@code names}, most significant bit first, e.g. {@code fromBits("NV-BDIZC", p)}
+         * for a 6502 status byte.
+         */
+        public static List<Flag> fromBits(String names, long value) {
+            int n = names.length();
+            List<Flag> flags = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                flags.add(new Flag(String.valueOf(names.charAt(i)), (value >>> (n - 1 - i) & 1) != 0));
+            }
+            return flags;
+        }
     }
 
     /** A named address to watch from the start. */

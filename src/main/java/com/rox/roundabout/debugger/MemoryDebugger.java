@@ -83,7 +83,8 @@ public final class MemoryDebugger {
 
         Box right = body.cutRight(340);
         body.cutRight(10);
-        CpuPanel.draw(ui, right.cutTop(150), target.cpu());
+        DebugTarget.CpuState cpu = target.cpu();
+        CpuPanel.draw(ui, right.cutTop(CpuPanel.height(right.w, cpu)), cpu);
         List<FrameTimes> timings = target.frameTimings();
         if (!timings.isEmpty()) {
             right.cutTop(10);
