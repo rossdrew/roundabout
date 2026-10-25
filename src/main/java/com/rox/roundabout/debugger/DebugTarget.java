@@ -7,6 +7,8 @@ import com.rox.roundabout.data.MemorySource;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_UNKNOWN;
+
 /** What {@link MemoryDebugger} inspects and controls - implemented by an emulator adapter. */
 public interface DebugTarget {
 
@@ -47,6 +49,16 @@ public interface DebugTarget {
         }
     }
 
+    /**
+     * A run control shown as a button, with an optional shortcut key ({@code GLFW_KEY_*}, or
+     * {@code GLFW_KEY_UNKNOWN} for none). Steps only run while paused.
+     */
+    record Step(String label, int key, Runnable run) {
+        public Step(String label, Runnable run) {
+            this(label, GLFW_KEY_UNKNOWN, run);
+        }
+    }
+
     /** A named address to watch from the start. */
     record Label(String name, int address) {
     }
@@ -77,9 +89,8 @@ public interface DebugTarget {
 
     void resume();
 
-    void stepFrame();
-
-    void stepInstruction();
+    /** The ways to advance a paused target, in button order, e.g. one frame and one instruction; read every frame. */
+    List<Step> steps();
 
     /** A short, human-readable run summary for the top bar, e.g. a frame count and speed. */
     String status();

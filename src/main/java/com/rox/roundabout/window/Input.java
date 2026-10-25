@@ -3,6 +3,8 @@ package com.rox.roundabout.window;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 /**
  * Input state for one frame. Positions are in logical (DPI-independent) pixels.
  * "Pressed"/"released" flags are edges that last exactly one frame.
@@ -49,5 +51,37 @@ public final class Input {
         doubleClicked = false;
         scrollY = 0;
         keysPressed.clear();
+    }
+
+    /** A short display name for a {@code GLFW_KEY_*} code, e.g. "F", "7", "F5", "Enter". */
+    public static String keyName(int key) {
+        if ((key >= GLFW_KEY_A && key <= GLFW_KEY_Z) || (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)) {
+            return String.valueOf((char) key);
+        }
+        if (key >= GLFW_KEY_F1 && key <= GLFW_KEY_F25) {
+            return "F" + (key - GLFW_KEY_F1 + 1);
+        }
+        return switch (key) {
+            case GLFW_KEY_SPACE -> "Space";
+            case GLFW_KEY_ENTER -> "Enter";
+            case GLFW_KEY_TAB -> "Tab";
+            case GLFW_KEY_BACKSPACE -> "Backspace";
+            case GLFW_KEY_INSERT -> "Ins";
+            case GLFW_KEY_DELETE -> "Del";
+            case GLFW_KEY_HOME -> "Home";
+            case GLFW_KEY_END -> "End";
+            case GLFW_KEY_PAGE_UP -> "PgUp";
+            case GLFW_KEY_PAGE_DOWN -> "PgDn";
+            case GLFW_KEY_LEFT -> "←";
+            case GLFW_KEY_RIGHT -> "→";
+            case GLFW_KEY_UP -> "↑";
+            case GLFW_KEY_DOWN -> "↓";
+            case GLFW_KEY_PERIOD -> ".";
+            case GLFW_KEY_COMMA -> ",";
+            case GLFW_KEY_SLASH -> "/";
+            case GLFW_KEY_MINUS -> "-";
+            case GLFW_KEY_EQUAL -> "=";
+            default -> "key " + key;
+        };
     }
 }
