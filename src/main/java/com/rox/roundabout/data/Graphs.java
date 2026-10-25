@@ -52,13 +52,6 @@ public final class Graphs {
         ui.strokePaint(colour, 1);
     }
 
-    /** Full graph of byte values (hex axis and readout) - see the general overload. */
-    public static Box lineGraph(Ui ui, Box area, RingSeries series, float min, float max, int colour,
-                                float sampleSeconds) {
-        return lineGraph(ui, area, series, min, max, colour, sampleSeconds,
-                v -> String.format("%02X", (int) v), v -> String.format("$%02X  %d", (int) v, (int) v));
-    }
-
     /**
      * Full graph with grid lines, value axis, latest-value marker and hover readout.
      *
