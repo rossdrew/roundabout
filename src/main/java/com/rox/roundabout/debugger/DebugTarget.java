@@ -77,14 +77,12 @@ public interface DebugTarget {
         return List.of();
     }
 
-    /** Frame streams to show in a frame-timing panel, e.g. frames produced and frames shown; none by default. */
+    /**
+     * Frame streams to show in a frame-timing panel, e.g. frames produced and frames shown, each with its own
+     * budget; none by default.
+     */
     default List<FrameTimes> frameTimings() {
         return List.of();
-    }
-
-    /** The intended interval between frames, for the frame-timing panel's budget marker. */
-    default float frameBudgetMs() {
-        return 1000f / 60;
     }
 
     CpuState cpu();

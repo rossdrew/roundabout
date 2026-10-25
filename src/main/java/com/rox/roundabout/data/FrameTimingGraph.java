@@ -16,16 +16,21 @@ public final class FrameTimingGraph {
     private FrameTimingGraph() {
     }
 
-    /** @param budgetMs the intended interval, e.g. 16.67 for 60 fps */
-    public static void draw(Ui ui, Box area, FrameTimes times, float budgetMs, float sampleSeconds) {
+    /** Draws {@code times} against its own budget; each interval is plotted as one budget-long sample. */
+    public static void draw(Ui ui, Box area, FrameTimes times) {
         Theme t = ui.theme;
         RingSeries s = times.intervalsMs();
+        float budgetMs = times.budgetMs();
+        float sampleSeconds = budgetMs / 1000;
         float lateMs = budgetMs * 1.5f;
         Box row = area.copy();
 
         Box summary = row.cutLeft(140);
         row.cutLeft(8);
         ui.text(summary.cutTop(20), times.name(), t.uiBold, t.text);
+        Box budgetRow = summary.cutTop(18);
+        ui.text(budgetRow, "budget", t.uiSmall, t.textDim);
+        ui.textRight(budgetRow, String.format("%.1f ms", budgetMs), t.mono, t.textDim);
         stat(ui, summary.cutTop(18), "mean", s.average(), budgetMs, lateMs);
         stat(ui, summary.cutTop(18), "p99", s.percentile(0.99f), budgetMs, lateMs);
         stat(ui, summary.cutTop(18), "max", s.max(), budgetMs, lateMs);

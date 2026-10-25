@@ -186,14 +186,13 @@ public final class MemoryDebugger {
     }
 
     private void frameTiming(Box area, List<FrameTimes> timings) {
-        Box content = ui.panel(area, String.format("Frame timing  ·  ms between frames  ·  budget %.1f ms", target.frameBudgetMs()));
+        Box content = ui.panel(area, "Frame timing  ·  ms between frames");
         float rowH = (content.h - 10 * (timings.size() - 1)) / timings.size();
         for (int i = 0; i < timings.size(); i++) {
             if (i > 0) {
                 content.cutTop(10);
             }
-            FrameTimingGraph.draw(ui, content.cutTop(rowH), timings.get(i), target.frameBudgetMs(),
-                    target.frameBudgetMs() / 1000);
+            FrameTimingGraph.draw(ui, content.cutTop(rowH), timings.get(i));
         }
     }
 }

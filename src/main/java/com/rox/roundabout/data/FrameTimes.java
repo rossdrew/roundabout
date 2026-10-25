@@ -10,6 +10,7 @@ public final class FrameTimes {
     private static final int MASK = CAPACITY - 1;
 
     private final String name;
+    private final float budgetMs;
     private final long[] stamps = new long[CAPACITY];
     private volatile long written;
     private long read;
@@ -17,9 +18,16 @@ public final class FrameTimes {
     private boolean hasPrevious;
     private final RingSeries intervalsMs;
 
-    /** @param history how many intervals to keep, e.g. 600 for ten seconds at 60 fps */
-    public FrameTimes(String name, int history) {
+    /**
+     * @param history  how many intervals to keep, e.g. 600 for ten seconds at 60 fps
+     * @param budgetMs the intended interval between events, e.g. 1000 / 60f for 60 fps or 20 for 50 Hz PAL
+     */
+    public FrameTimes(String name, int history, float budgetMs) {
+        if (budgetMs <= 0) {
+            throw new IllegalArgumentException("budgetMs must be positive: " + budgetMs);
+        }
         this.name = name;
+        this.budgetMs = budgetMs;
         intervalsMs = new RingSeries(history);
     }
 
@@ -49,6 +57,10 @@ public final class FrameTimes {
 
     public String name() {
         return name;
+    }
+
+    public float budgetMs() {
+        return budgetMs;
     }
 
     /** Gaps between consecutive events, oldest first. UI thread only. */
