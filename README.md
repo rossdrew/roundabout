@@ -5,8 +5,10 @@ What you lose on the Swings, you gain on the Roundabout: a GPU-rendered, immedia
 
 Swing is great for forms, for dynamic data like memory activity in an emulator it's just too heavyweight.  A library for creating intuitive views over dynamic data.
 
+It comes with a ready-made debugger window for emulators and CPU simulators: a live hex view with write heat, a memory map, watches with history, CPU registers and flags, frame timing and run controls. Nothing in it is tied to one machine; the target describes its own memory regions, registers, flags and step controls.
+
 ```
-./gradlew run                                  # standalone memory debugger preview (simulated NES data)
+./gradlew run                                  # the debugger on a simulated NES (the demo isn't part of the library)
 ./gradlew run -Droundabout.screenshot=/tmp/ui.png   # render ~2s, save a PNG, exit
 ```
 
@@ -14,7 +16,42 @@ The memory map and the watches (list and history) are docked to the hex grid; cl
 
 Keys: `Space` run/pause · each of the target's steps on its own key (the demo: `F` step frame, `I` step instruction) · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it.
 
-Embedding: implement `com.rox.roundabout.debugger.DebugTarget` and call `new MemoryDebugger(target, title).run()` (blocks; `close()` from any thread). The parts are reusable on their own: `MemoryPanel` (map + hex + watches over a `MemorySource`), `CpuPanel`, and `Dock` for any foldable, linked panel. EmuRoxLab does this in `NesRoundaboutTarget`.
+## Embedding the debugger
+
+Implement `com.rox.roundabout.debugger.DebugTarget` over your emulator and call `new MemoryDebugger(target, title).run()` (blocks; `close()` from any thread). A sketch for an 8-bit CPU:
+
+```java
+class MyTarget implements DebugTarget, MemorySource {
+    private final List<Step> steps = List.of(
+            new Step("Step frame", GLFW_KEY_F, machine::runFrame),
+            new Step("Step instr", GLFW_KEY_I, machine::step));
+
+    public MemorySource memory() { return this; }
+    public int size() { return 0x10000; }
+    public int peek(int address) { return machine.bus().peek(address); } // no side effects
+
+    public List<MemoryRegion> regions() {
+        return List.of(new MemoryRegion("RAM", 0x0000, 0x7FFF, 0xFF89DDFF),
+                       new MemoryRegion("ROM", 0x8000, 0xFFFF, 0xFF7AA2F7));
+    }
+
+    public CpuState cpu() {
+        Cpu c = machine.cpu();
+        return new CpuState(List.of(new Register("PC", c.pc(), 16), new Register("A", c.a(), 8)),
+                            Flag.fromBits("NV-BDIZC", c.status()));
+    }
+
+    public List<Step> steps() { return steps; }
+    public boolean isPaused() { return machine.isPaused(); }
+    public void pause() { machine.pause(); }
+    public void resume() { machine.resume(); }
+    public String status() { return machine.cycles() + " cycles"; }
+}
+```
+
+Optional: `labels()` for watches to start with, `frameTimings()` for frame-timing streams (each `FrameTimes` with its own budget), and `numberStyle()` for `$`/`%` instead of `0x`/`0b`. The demo's `FakeNes` is a complete example, and [EmuRox](https://github.com/rossdrew/EmuRoxLab) uses it for its NES.
+
+The parts are reusable on their own: `MemoryPanel` (map + hex + watches over a `MemorySource`), `CpuPanel`, `FrameTimingGraph`, `Graphs`, and `Dock` for any foldable, linked panel.
 
 ## Using it as a library
 
@@ -48,4 +85,4 @@ Skija, LWJGL and the Linux x64 natives come with it. Run the app with `--enable-
 
 To release: bump `version` in `build.gradle.kts`, merge to `main`, and publish a GitHub release tagged `v<version>`; the `Publish` workflow tests and publishes it. `./gradlew publishToMavenLocal` installs a build locally for trying changes out.
 
-![Screenshot running inside EmuRox](/resources/state_221026.png)
+![Roundabout debugging an NES in EmuRox](/resources/state_221026.png)

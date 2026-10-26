@@ -4,7 +4,6 @@ import com.rox.roundabout.data.FrameTimes;
 import com.rox.roundabout.data.MemoryRegion;
 import com.rox.roundabout.data.MemorySource;
 import com.rox.roundabout.debugger.DebugTarget;
-import com.rox.roundabout.debugger.NesMemoryMap;
 
 import java.util.List;
 import java.util.Random;

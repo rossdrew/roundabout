@@ -3,8 +3,9 @@ package com.rox.roundabout.data;
 import java.util.function.IntUnaryOperator;
 
 /**
- * Side-effect-free view of a byte-addressable memory space.
- * Mirrors EmuRoxLab's {@code MemoryDebugSource} so an adapter is a one-liner.
+ * Side-effect-free view of a byte-addressable memory space, e.g. an emulated CPU's bus. Reads must not
+ * trigger hardware side effects (such as clearing a status register), since the debugger reads every byte
+ * every frame.
  */
 public interface MemorySource {
     int size();
