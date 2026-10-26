@@ -1,4 +1,4 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.memory;
 
 /**
  * How addresses and byte values are written: hex addresses padded to the width of the address space

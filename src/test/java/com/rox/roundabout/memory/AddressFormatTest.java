@@ -1,6 +1,6 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.memory;
 
-import com.rox.roundabout.data.AddressFormat.Style;
+import com.rox.roundabout.memory.AddressFormat.Style;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -49,9 +49,18 @@ class MyTarget implements DebugTarget, MemorySource {
 }
 ```
 
-Optional: `labels()` for watches to start with, `frameTimings()` for frame-timing streams (each `FrameTimes` with its own budget), and `numberStyle()` for `$`/`%` instead of `0x`/`0b`. The demo's `FakeNes` is a complete example, and [EmuRox](https://github.com/rossdrew/EmuRoxLab) uses it for its NES.
+Optional: `labels()` for watches to start with (`NamedAddress`es), `frameTimings()` for frame-timing streams (each `FrameTimes` with its own budget), and `numberStyle()` for `$`/`%` instead of `0x`/`0b`. The demo's `FakeNes` is a complete example, and [EmuRox](https://github.com/rossdrew/EmuRoxLab) uses it for its NES.
 
-The parts are reusable on their own: `MemoryPanel` (map + hex + watches over a `MemorySource`), `CpuPanel`, `FrameTimingGraph`, `Graphs`, and `Dock` for any foldable, linked panel.
+The parts are reusable on their own. Packages under `com.rox.roundabout`:
+
+| Package | What's in it |
+|---|---|
+| (root) | `Ui` (immediate-mode context), `Box` (rect-cut layout), `Theme`, `Dock` (foldable, linked panels) |
+| `window` | `GlfwWindow` (OpenGL + Skija frame loop), `Input` |
+| `chart` | `Graphs` (sparklines, line graphs), `RingSeries` |
+| `memory` | `MemoryPanel` (map + hex + watches over a `MemorySource`), `HexGrid`, `MemoryMap`, `MemoryHeat`, `AddressFormat` |
+| `timing` | `FrameTimes` (lock-free event timestamps), `FrameTimingGraph` |
+| `debugger` | `DebugTarget`, `MemoryDebugger` (the ready-made window), `CpuPanel` |
 
 ## Using it as a library
 

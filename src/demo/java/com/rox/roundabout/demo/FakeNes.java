@@ -1,9 +1,10 @@
 package com.rox.roundabout.demo;
 
-import com.rox.roundabout.data.FrameTimes;
-import com.rox.roundabout.data.MemoryRegion;
-import com.rox.roundabout.data.MemorySource;
 import com.rox.roundabout.debugger.DebugTarget;
+import com.rox.roundabout.memory.MemoryRegion;
+import com.rox.roundabout.memory.MemorySource;
+import com.rox.roundabout.memory.NamedAddress;
+import com.rox.roundabout.timing.FrameTimes;
 
 import java.util.List;
 import java.util.Random;
@@ -124,15 +125,15 @@ final class FakeNes implements MemorySource, DebugTarget {
     }
 
     @Override
-    public List<Label> labels() {
+    public List<NamedAddress> labels() {
         return List.of(
-                new Label("Frame counter", 0x0010),
-                new Label("Player X", 0x0030),
-                new Label("Player Y", 0x0031),
-                new Label("Enemy 0 Y", 0x0041),
-                new Label("Health", 0x0076),
-                new Label("RNG lo", 0x0080),
-                new Label("PPUCTRL", 0x2000));
+                new NamedAddress("Frame counter", 0x0010),
+                new NamedAddress("Player X", 0x0030),
+                new NamedAddress("Player Y", 0x0031),
+                new NamedAddress("Enemy 0 Y", 0x0041),
+                new NamedAddress("Health", 0x0076),
+                new NamedAddress("RNG lo", 0x0080),
+                new NamedAddress("PPUCTRL", 0x2000));
     }
 
     @Override

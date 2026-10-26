@@ -1,4 +1,4 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.chart;
 
 /** Fixed-capacity ring buffer of float samples; oldest samples are overwritten. */
 public final class RingSeries {

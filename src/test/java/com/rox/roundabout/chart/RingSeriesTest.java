@@ -1,4 +1,4 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.chart;
 
 import org.junit.jupiter.api.Test;
 

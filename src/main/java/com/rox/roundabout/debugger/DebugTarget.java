@@ -1,9 +1,10 @@
 package com.rox.roundabout.debugger;
 
-import com.rox.roundabout.data.AddressFormat;
-import com.rox.roundabout.data.FrameTimes;
-import com.rox.roundabout.data.MemoryRegion;
-import com.rox.roundabout.data.MemorySource;
+import com.rox.roundabout.memory.AddressFormat;
+import com.rox.roundabout.memory.MemoryRegion;
+import com.rox.roundabout.memory.MemorySource;
+import com.rox.roundabout.memory.NamedAddress;
+import com.rox.roundabout.timing.FrameTimes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,10 +61,6 @@ public interface DebugTarget {
         }
     }
 
-    /** A named address to watch from the start. */
-    record Label(String name, int address) {
-    }
-
     MemorySource memory();
 
     List<MemoryRegion> regions();
@@ -73,7 +70,8 @@ public interface DebugTarget {
         return AddressFormat.Style.C;
     }
 
-    default List<Label> labels() {
+    /** Addresses to watch from the start; none by default. */
+    default List<NamedAddress> labels() {
         return List.of();
     }
 

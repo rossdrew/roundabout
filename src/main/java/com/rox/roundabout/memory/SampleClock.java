@@ -1,4 +1,4 @@
-package com.rox.roundabout.debugger;
+package com.rox.roundabout.memory;
 
 /** Turns uneven frame times into a whole number of fixed-interval samples, so history covers real time. */
 final class SampleClock {
