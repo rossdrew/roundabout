@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.rox"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
     mavenCentral()
@@ -70,6 +70,12 @@ publishing {
                 name = "Roundabout"
                 description = "GPU-rendered, immediate-mode UI toolkit for real-time debugging tools (Skija + LWJGL/GLFW)"
                 url = "https://github.com/rossdrew/roundabout"
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/licenses/MIT"
+                    }
+                }
             }
         }
     }
