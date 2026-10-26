@@ -77,12 +77,16 @@ repositories {
 }
 
 dependencies {
-    implementation("com.rox:roundabout:0.1.0")
+    implementation("com.rox:roundabout:0.2.0")
 }
 ```
 
-Skija, LWJGL and the Linux x64 natives come with it. Run the app with `--enable-native-access=ALL-UNNAMED`.
+Skija, LWJGL and the Linux x64 natives come with it (Linux only for now). Run the app with `--enable-native-access=ALL-UNNAMED`.
 
 To release: bump `version` in `build.gradle.kts`, merge to `main`, and publish a GitHub release tagged `v<version>`; the `Publish` workflow tests and publishes it. `./gradlew publishToMavenLocal` installs a build locally for trying changes out.
 
 ![Roundabout debugging an NES in EmuRox](/resources/state_221026.png)
+
+## License
+
+[MIT](LICENSE)
