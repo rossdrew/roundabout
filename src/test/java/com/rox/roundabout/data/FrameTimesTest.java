@@ -9,7 +9,7 @@ class FrameTimesTest {
 
     @Test
     void intervalsAreTheGapsBetweenRecordedEvents() {
-        FrameTimes times = new FrameTimes("emu", 10);
+        FrameTimes times = new FrameTimes("emu", 10, 16);
         times.record(0);
         times.record(16 * MS);
         times.update();
@@ -25,7 +25,7 @@ class FrameTimesTest {
 
     @Test
     void updatingWithNothingNewChangesNothing() {
-        FrameTimes times = new FrameTimes("emu", 10);
+        FrameTimes times = new FrameTimes("emu", 10, 16);
         times.record(0);
         times.update();
         times.update();
@@ -34,7 +34,7 @@ class FrameTimesTest {
 
     @Test
     void eventsLostToOverflowDontMakeAFakeInterval() {
-        FrameTimes times = new FrameTimes("emu", 4000);
+        FrameTimes times = new FrameTimes("emu", 4000, 16);
         times.record(0);
         times.update();
         for (int i = 1; i <= 3000; i++) {
@@ -45,5 +45,11 @@ class FrameTimesTest {
         RingSeries intervals = times.intervalsMs();
         assertEquals(1023, intervals.size()); // the newest 1024 events, so 1023 gaps
         assertEquals(1, intervals.max());
+    }
+
+    @Test
+    void eachStreamHasItsOwnBudget() {
+        assertEquals(20, new FrameTimes("pal", 10, 20).budgetMs());
+        assertThrows(IllegalArgumentException.class, () -> new FrameTimes("none", 10, 0));
     }
 }

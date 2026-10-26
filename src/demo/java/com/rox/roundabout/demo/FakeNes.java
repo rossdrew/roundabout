@@ -31,7 +31,7 @@ final class FakeNes implements MemorySource, DebugTarget {
     private final Random rng = new Random(6502);
 
     private final Object lock = new Object();
-    private final FrameTimes frameTimes = new FrameTimes("emu frames", 600);
+    private final FrameTimes frameTimes = new FrameTimes("emu frames", 600, 1000 / 60f);
     private long simulatedFrames;
     private volatile boolean paused;
     private volatile long frames;

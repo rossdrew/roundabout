@@ -25,7 +25,9 @@ import static org.lwjgl.glfw.GLFW.*;
  * independently, giving their space to the hex grid and skipping their drawing.
  */
 public final class MemoryPanel {
-    private static final int HISTORY = 600; // 10s at 60fps
+    private static final float SAMPLE_SECONDS = 1 / 60f;
+    private static final int HISTORY_SECONDS = 10;
+    private static final int HISTORY = Math.round(HISTORY_SECONDS / SAMPLE_SECONDS);
     private static final float WATCH_ROW = 40;
 
     private record Watch(String label, int address, RingSeries history) {
@@ -38,6 +40,7 @@ public final class MemoryPanel {
     private final List<MemoryRegion> regions;
     private final AddressFormat format;
     private final MemoryHeat heat;
+    private final SampleClock sampleClock = new SampleClock(SAMPLE_SECONDS, HISTORY);
     private final HexGrid hex;
     private final MemoryMap map;
     private final List<Watch> watches = new ArrayList<>();
@@ -83,11 +86,16 @@ public final class MemoryPanel {
         return hex.hovered() >= 0 ? hex.hovered() : hex.selected();
     }
 
-    /** Samples memory; call once per frame, before {@link #draw}. Watch history keeps recording while folded. */
+    /**
+     * Samples memory; call once per frame, before {@link #draw}. Watch history is sampled every
+     * {@link #SAMPLE_SECONDS} whatever the frame rate, and keeps recording while folded.
+     */
     public void update(float dt) {
         heat.update(dt);
-        for (Watch w : watches) {
-            w.history().add(heat.value(w.address()));
+        for (int n = sampleClock.advance(dt); n > 0; n--) {
+            for (Watch w : watches) {
+                w.history().add(heat.value(w.address()));
+            }
         }
     }
 
@@ -213,8 +221,8 @@ public final class MemoryPanel {
             return;
         }
         Watch w = watches.get(Math.min(selectedWatch, watches.size() - 1));
-        Box content = ui.panel(area, w.label() + "  ·  " + format.address(w.address()) + "  ·  last 10s");
-        Graphs.lineGraph(ui, content, w.history(), 0, 255, t.accent, 1 / 60f,
+        Box content = ui.panel(area, w.label() + "  ·  " + format.address(w.address()) + "  ·  last " + HISTORY_SECONDS + "s");
+        Graphs.lineGraph(ui, content, w.history(), 0, 255, t.accent, SAMPLE_SECONDS,
                 v -> String.format("%02X", (int) v), v -> format.value((int) v) + "  " + (int) v);
     }
 }
