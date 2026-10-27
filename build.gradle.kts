@@ -1,6 +1,7 @@
 plugins {
     id("java-library")
     id("maven-publish")
+    id("info.solidsoft.pitest") version "1.19.0" // mutation testing
 }
 
 group = "com.rox"
@@ -60,6 +61,22 @@ tasks.register<JavaExec>("run") {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Mutation testing: `./gradlew pitest`, report in build/reports/pitest. Narrow it while iterating with
+// e.g. `-PpitestScope=com.rox.roundabout.memory.*`
+val pitestScope = (findProperty("pitestScope") as String?)?.split(",") ?: listOf("com.rox.roundabout.*")
+
+pitest {
+    junit5PluginVersion = "1.2.2"
+    targetClasses = pitestScope
+    targetTests = pitestScope
+    // needs a display and an OpenGL context
+    excludedClasses = listOf("com.rox.roundabout.window.GlfwWindow*")
+    jvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
+    threads = Runtime.getRuntime().availableProcessors()
+    outputFormats = listOf("HTML", "XML")
+    timestampedReports = false
 }
 
 publishing {
