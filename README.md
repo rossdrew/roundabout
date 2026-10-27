@@ -1,6 +1,6 @@
 <img align="left" width="150" height="150" src="resources/roundabout-logo-200.png" alt="Roundabout logo">
 
-# Roundabout
+### Roundabout
 #### _A GPU-rendered, immediate-mode UI toolkit for real-time debugging tools_
 
 <br clear="left">
