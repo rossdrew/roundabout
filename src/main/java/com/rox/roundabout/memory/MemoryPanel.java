@@ -24,7 +24,7 @@ public final class MemoryPanel {
     private static final int HISTORY = Math.round(HISTORY_SECONDS / SAMPLE_SECONDS);
     private static final float WATCH_ROW = 40;
 
-    private record Watch(String label, int address, RingSeries history) {
+    record Watch(String label, int address, RingSeries history) {
         Watch(String label, int address) {
             this(label, address, new RingSeries(HISTORY));
         }
@@ -80,6 +80,19 @@ public final class MemoryPanel {
         return memory;
     }
 
+    // package-private for tests
+    List<Watch> watches() {
+        return watches;
+    }
+
+    int selectedWatch() {
+        return selectedWatch;
+    }
+
+    HexGrid hex() {
+        return hex;
+    }
+
     /** The address under the mouse in the hex grid, else the selected one. */
     public int focusAddress() {
         return hex.hovered() >= 0 ? hex.hovered() : hex.selected();
@@ -110,7 +123,7 @@ public final class MemoryPanel {
         }
         if (unwatchKey != GLFW_KEY_UNKNOWN && input.keyPressed(unwatchKey) && !watches.isEmpty()) {
             watches.remove(selectedWatch);
-            selectedWatch = Math.clamp(selectedWatch, 0, watches.size() - 1);
+            selectedWatch = Math.max(0, Math.min(selectedWatch, watches.size() - 1));
             revealWatch = true;
         }
     }

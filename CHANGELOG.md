@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Fixed:
+
+- Deleting the last watch (Del with one left) crashed the debugger.
+
 ## 0.3.0
 
 API tidy before going public. Breaking:

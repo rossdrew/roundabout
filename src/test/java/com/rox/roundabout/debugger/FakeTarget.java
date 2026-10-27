@@ -3,6 +3,7 @@ package com.rox.roundabout.debugger;
 import com.rox.roundabout.memory.ArrayMemory;
 import com.rox.roundabout.memory.MemoryRegion;
 import com.rox.roundabout.memory.MemorySource;
+import com.rox.roundabout.timing.FrameTimes;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ final class FakeTarget implements DebugTarget {
     final ArrayMemory memory = new ArrayMemory(0x1000);
     final List<MemoryRegion> regions = List.of(new MemoryRegion("Low", 0x000, 0x7FF, 0xFF5AA9FF),
             new MemoryRegion("High", 0x800, 0xFFF, 0xFF6FDC9C));
+    List<FrameTimes> frameTimings = List.of();
     boolean paused;
     int steps;
 
@@ -24,6 +26,11 @@ final class FakeTarget implements DebugTarget {
     @Override
     public List<MemoryRegion> regions() {
         return regions;
+    }
+
+    @Override
+    public List<FrameTimes> frameTimings() {
+        return frameTimings;
     }
 
     @Override

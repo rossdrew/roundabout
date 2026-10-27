@@ -2,6 +2,7 @@ package com.rox.roundabout.debugger;
 
 import com.rox.roundabout.UiHarness;
 import com.rox.roundabout.debugger.DebugTarget.Step;
+import com.rox.roundabout.timing.FrameTimes;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -62,6 +63,64 @@ class MemoryDebuggerTest {
             assertTrue(target.paused);
             h.key(GLFW_KEY_F);
             assertEquals(1, target.steps);
+        }
+    }
+
+    // the top bar's controls: Run/Pause at x 114-206 after the title, then each step's button from x 214
+    private static final float BAR_Y = 24, RUN_X = 160, STEP_X = 260;
+
+    @Test
+    void theRunButtonTogglesAndStepButtonsOnlyWorkWhilePaused() {
+        FakeTarget target = new FakeTarget();
+        try (UiHarness h = new UiHarness(1440, 860)) {
+            h.scene(new MemoryDebugger(target, "test")::frame).frame();
+
+            h.click(STEP_X, BAR_Y);
+            assertEquals(0, target.steps);
+            h.click(RUN_X, BAR_Y);
+            assertTrue(target.paused);
+            h.click(STEP_X, BAR_Y);
+            assertEquals(1, target.steps);
+            h.click(RUN_X, BAR_Y);
+            assertFalse(target.paused);
+        }
+    }
+
+    @Test
+    void aCustomKeymapReplacesTheDefaultKeys() {
+        FakeTarget target = new FakeTarget();
+        MemoryDebugger debugger = new MemoryDebugger(target, "test", new Keymap(GLFW_KEY_P, GLFW_KEY_UNKNOWN, GLFW_KEY_UNKNOWN));
+        try (UiHarness h = new UiHarness(1440, 860)) {
+            h.scene(debugger::frame).frame();
+
+            h.key(GLFW_KEY_SPACE);
+            assertFalse(target.paused);
+            h.key(GLFW_KEY_P);
+            assertTrue(target.paused);
+            h.key(GLFW_KEY_P);
+            assertFalse(target.paused);
+        }
+    }
+
+    @Test
+    void aStepOnABoundKeyIsRejected() {
+        FakeTarget target = new FakeTarget();
+        assertThrows(IllegalArgumentException.class,
+                () -> new MemoryDebugger(target, "test", new Keymap(GLFW_KEY_F, GLFW_KEY_W, GLFW_KEY_DELETE)));
+    }
+
+    @Test
+    void frameTimingsAreReadEveryFrame() {
+        FakeTarget target = new FakeTarget();
+        FrameTimes times = new FrameTimes("emu", 100, 16);
+        target.frameTimings = List.of(times, new FrameTimes("shown", 100, 16));
+        try (UiHarness h = new UiHarness(1440, 860)) {
+            h.scene(new MemoryDebugger(target, "test")::frame);
+            times.record(0);
+            times.record(16_000_000);
+            h.frame();
+
+            assertEquals(1, times.intervalsMs().size());
         }
     }
 }
