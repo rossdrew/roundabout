@@ -26,8 +26,10 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  */
 public final class GlfwWindow implements AutoCloseable {
 
+    /** Draws each frame; see {@link #run}. */
     @FunctionalInterface
     public interface Renderer {
+        /** Draws one frame onto {@code canvas}, sized {@code width} by {@code height} logical pixels. */
         void frame(Canvas canvas, Input input, float width, float height);
     }
 
@@ -38,6 +40,11 @@ public final class GlfwWindow implements AutoCloseable {
     private Surface surface;
     private int framebufferWidth, framebufferHeight;
 
+    /**
+     * Opens a window {@code width} by {@code height}, scaled to the monitor's DPI, with vsync on.
+     *
+     * @throws IllegalStateException if GLFW or the window can't be created
+     */
     public GlfwWindow(String title, int width, int height) {
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialise GLFW");

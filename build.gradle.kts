@@ -15,6 +15,7 @@ java {
         languageVersion = JavaLanguageVersion.of(26)
     }
     withSourcesJar()
+    withJavadocJar()
 }
 
 // The demo (simulated NES + standalone window) lives beside the library but isn't published
@@ -88,5 +89,14 @@ publishing {
                 password = providers.gradleProperty("gpr.key").orNull ?: System.getenv("GITHUB_TOKEN")
             }
         }
+    }
+}
+
+// Fail on broken links, HTML and syntax. "missing" is off: it would demand @param/@return on every
+// method, which one-line comments here make redundant.
+tasks.javadoc {
+    (options as StandardJavadocDocletOptions).apply {
+        addBooleanOption("Xdoclint:all,-missing", true)
+        addBooleanOption("Xwerror", true)
     }
 }

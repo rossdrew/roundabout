@@ -12,16 +12,27 @@ import static org.lwjgl.glfw.GLFW.*;
 public final class Input {
     private static final double DOUBLE_CLICK_SECONDS = 0.35;
 
+    /** Mouse position, or -1 when it's outside the window. */
     public float mouseX = -1, mouseY = -1;
+    /** True while the left mouse button is down. */
     public boolean mouseDown;
+    /** True on the frame the left button goes down. */
     public boolean mousePressed;
+    /** True on the frame the left button goes up. */
     public boolean mouseReleased;
+    /** True on the frame of a second press in quick succession; {@link #mousePressed} is also true. */
     public boolean doubleClicked;
+    /** Scroll this frame, in wheel steps; positive is up. */
     public float scrollY;
 
     private final Set<Integer> keysPressed = new HashSet<>();
     private double lastClickTime = -1;
 
+    /** Nothing pressed, with the mouse outside the window. */
+    public Input() {
+    }
+
+    /** True on the frame {@code glfwKey} ({@code GLFW_KEY_*}) was pressed or repeated. */
     public boolean keyPressed(int glfwKey) {
         return keysPressed.contains(glfwKey);
     }

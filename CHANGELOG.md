@@ -11,6 +11,7 @@ Added:
 
 - **Configurable keys:** `Keymap(runPause, watch, unwatch)` passed to `MemoryDebugger(target, title, keymap)`; `GLFW_KEY_UNKNOWN` turns a key off. Hints follow the keymap. The constructor rejects a step key that is already bound (keymap or hex navigation, `HexGrid.NAVIGATION_KEYS`).
 - `MemoryPanel.handleKeys(input, watchKey, unwatchKey)`.
+- **Javadoc** for the whole public API, published as a `-javadoc.jar` so IDEs show it. The build fails on broken doc links or HTML.
 
 ## 0.2.0
 

@@ -6,20 +6,24 @@ public final class RingSeries {
     private int head;
     private int count;
 
+    /** An empty series holding up to {@code capacity} samples. */
     public RingSeries(int capacity) {
         samples = new float[capacity];
     }
 
+    /** Appends a sample, overwriting the oldest when full. */
     public void add(float value) {
         samples[head] = value;
         head = (head + 1) % samples.length;
         count = Math.min(count + 1, samples.length);
     }
 
+    /** The most samples kept. */
     public int capacity() {
         return samples.length;
     }
 
+    /** How many samples are held, up to {@link #capacity()}. */
     public int size() {
         return count;
     }
@@ -32,10 +36,12 @@ public final class RingSeries {
         return samples[(head - count + i + samples.length) % samples.length];
     }
 
+    /** The newest sample, or 0 when empty. */
     public float latest() {
         return count == 0 ? 0 : get(count - 1);
     }
 
+    /** The largest sample, or 0 when empty. */
     public float max() {
         float max = Float.NEGATIVE_INFINITY;
         for (int i = 0; i < count; i++) {
@@ -68,6 +74,7 @@ public final class RingSeries {
         return n;
     }
 
+    /** The mean of the samples, or 0 when empty. */
     public float average() {
         float sum = 0;
         for (int i = 0; i < count; i++) {

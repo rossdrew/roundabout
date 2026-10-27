@@ -14,6 +14,7 @@ public final class MemoryHeat {
     private final float halfLifeSeconds;
     private int changedLastFrame;
 
+    /** Starts tracking {@code memory} from its current contents; heat halves every {@code halfLifeSeconds}. */
     public MemoryHeat(MemorySource memory, float halfLifeSeconds) {
         this.memory = memory;
         this.halfLifeSeconds = halfLifeSeconds;
@@ -26,6 +27,7 @@ public final class MemoryHeat {
         }
     }
 
+    /** Reads all of memory once, heating changed addresses and cooling the rest; call once per frame. */
     public void update(float dtSeconds) {
         float decay = (float) Math.pow(0.5, dtSeconds / halfLifeSeconds);
         int changed = 0;
@@ -44,6 +46,7 @@ public final class MemoryHeat {
         changedLastFrame = changed;
     }
 
+    /** The number of addresses. */
     public int size() {
         return values.length;
     }
@@ -53,14 +56,17 @@ public final class MemoryHeat {
         return values[address];
     }
 
+    /** How recently {@code address} changed: 1 on the frame it was written, halving every half-life. */
     public float heat(int address) {
         return heat[address];
     }
 
+    /** How many times {@code address} has changed since tracking began. */
     public int writes(int address) {
         return writes[address];
     }
 
+    /** How many addresses changed in the last {@link #update}. */
     public int changedLastFrame() {
         return changedLastFrame;
     }

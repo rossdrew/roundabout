@@ -8,6 +8,7 @@ import java.util.function.IntUnaryOperator;
  * every frame.
  */
 public interface MemorySource {
+    /** The number of addresses; valid ones are {@code 0} to {@code size() - 1}. */
     int size();
 
     /** Reads a byte (0-255) without triggering hardware side effects. */
@@ -21,10 +22,12 @@ public interface MemorySource {
         return this::peek;
     }
 
+    /** True when {@link #poke} may write {@code address}; false by default. */
     default boolean isEditable(int address) {
         return false;
     }
 
+    /** Writes a byte where {@link #isEditable} is true; throws {@link UnsupportedOperationException} by default. */
     default void poke(int address, int value) {
         throw new UnsupportedOperationException("read-only memory");
     }

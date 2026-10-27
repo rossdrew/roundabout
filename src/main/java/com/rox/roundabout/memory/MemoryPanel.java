@@ -46,10 +46,12 @@ public final class MemoryPanel {
     private final Dock watchDock = new Dock("Watches", Dock.Side.BOTTOM);
     private final Dock historyDock = new Dock("History", Dock.Side.RIGHT);
 
+    /** A panel over {@code memory} with {@code 0x} numbers, watching {@code labels} from the start. */
     public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<NamedAddress> labels) {
         this(memory, regions, labels, AddressFormat.Style.C);
     }
 
+    /** A panel over {@code memory} with numbers written in {@code style}, watching {@code labels} from the start. */
     public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<NamedAddress> labels,
                        AddressFormat.Style style) {
         this.memory = memory;
@@ -63,14 +65,17 @@ public final class MemoryPanel {
         }
     }
 
+    /** The write tracking behind the grid, for values and heat. */
     public MemoryHeat heat() {
         return heat;
     }
 
+    /** How addresses and values are written. */
     public AddressFormat format() {
         return format;
     }
 
+    /** The memory shown. */
     public MemorySource memory() {
         return memory;
     }
@@ -110,6 +115,7 @@ public final class MemoryPanel {
         }
     }
 
+    /** Draws the hex grid with the memory map and watches docked around it, filling {@code area}. */
     public void draw(Ui ui, Box area, float dt) {
         Box main = area.copy();
         Box mapBox = mapDock.cut(ui, main, 200);
