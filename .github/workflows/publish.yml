@@ -19,6 +19,8 @@ jobs:
           distribution: temurin
           java-version: 26
       - uses: gradle/actions/setup-gradle@v4
+      - name: Install Skia's native dependencies
+        run: sudo apt-get update -q && sudo apt-get install -yq libegl1
       - name: Check the tag matches the build version
         run: |
           version=$(./gradlew -q properties | sed -n 's/^version: //p')

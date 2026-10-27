@@ -32,4 +32,27 @@ class MemoryHeatTest {
         assertEquals(0.5f, heat.heat(3), 1e-4);
         assertEquals(0, heat.changedLastFrame());
     }
+
+    @Test
+    void startsFromTheCurrentContents() {
+        bytes[5] = 9;
+        MemoryHeat heat = new MemoryHeat(memory, 1f);
+        heat.update(0.016f);
+
+        assertEquals(9, heat.value(5));
+        assertEquals(0, heat.changedLastFrame(), "existing contents aren't writes");
+        assertEquals(0, heat.writes(5));
+        assertEquals(16, heat.size());
+    }
+
+    @Test
+    void heatHalvesEveryHalfLife() {
+        MemoryHeat heat = new MemoryHeat(memory, 2f);
+        bytes[0] = 1;
+        heat.update(0);
+        heat.update(2f);
+        assertEquals(0.5f, heat.heat(0), 1e-4);
+        heat.update(4f);
+        assertEquals(0.125f, heat.heat(0), 1e-4);
+    }
 }

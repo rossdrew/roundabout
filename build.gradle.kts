@@ -64,6 +64,7 @@ tasks.register<JavaExec>("run") {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging { exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }
 
 // Mutation testing: `./gradlew pitest`, report in build/reports/pitest. Narrow it while iterating with

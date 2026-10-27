@@ -47,4 +47,14 @@ class RingSeriesTest {
         series.add(26);
         assertEquals(1, series.countAbove(25));
     }
+
+    @Test
+    void capacityIsFixed() {
+        RingSeries series = new RingSeries(3);
+        for (int i = 0; i < 5; i++) {
+            series.add(i);
+        }
+        assertEquals(3, series.capacity());
+        assertEquals(3, series.size());
+    }
 }

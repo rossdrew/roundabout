@@ -29,4 +29,12 @@ class SampleClockTest {
         assertEquals(0, clock.advance(0.05f));
         assertEquals(1, clock.advance(0.06f));
     }
+
+    @Test
+    void exactlyTheCapIsNotAStall() {
+        SampleClock clock = new SampleClock(0.1f, 5);
+
+        assertEquals(5, clock.advance(0.55f));
+        assertEquals(1, clock.advance(0.06f), "the leftover 0.05 s is still owed");
+    }
 }
