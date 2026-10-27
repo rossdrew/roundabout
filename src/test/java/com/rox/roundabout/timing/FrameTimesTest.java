@@ -53,4 +53,30 @@ class FrameTimesTest {
         assertEquals(20, new FrameTimes("pal", 10, 20).budgetMs());
         assertThrows(IllegalArgumentException.class, () -> new FrameTimes("none", 10, 0));
     }
+
+    @Test
+    void aFullBufferLosesNothing() {
+        FrameTimes times = new FrameTimes("emu", 4000, 16);
+        times.record(0);
+        times.update();
+        for (int i = 1; i <= 1024; i++) {
+            times.record(i * MS);
+        }
+        times.update();
+
+        assertEquals(1024, times.intervalsMs().size(), "1024 unread events fit, and join up with the last one read");
+    }
+
+    @Test
+    void eventsAlreadyReadDontCountTowardsTheBuffer() {
+        FrameTimes times = new FrameTimes("emu", 4000, 16);
+        for (int round = 0; round < 3; round++) {
+            for (int i = 0; i < 600; i++) {
+                times.record((round * 600 + i) * MS);
+            }
+            times.update();
+        }
+
+        assertEquals(1799, times.intervalsMs().size());
+    }
 }

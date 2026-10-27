@@ -59,4 +59,29 @@ class CpuPanelTest {
 
         assertEquals(44 + 48 + 10 + 2 * 26 + 4, CpuPanel.height(340, cpu));
     }
+
+    @Test
+    void aRowFitsExactlyItsWidth() {
+        List<Register> two = List.of(new Register("A", 0, 8), new Register("X", 0, 8)); // 42 wide each, 6 apart
+
+        assertEquals(1, CpuPanel.rows(two, 90).size());
+        assertEquals(2, CpuPanel.rows(two, 89).size());
+        assertEquals(List.of(), CpuPanel.rows(List.of(), 90));
+    }
+
+    @Test
+    void heightAllowsForThePanelInset() {
+        List<Register> two = List.of(new Register("A", 0, 8), new Register("X", 0, 8));
+
+        assertEquals(44 + 48, CpuPanel.height(106, new CpuState(two, List.of())));
+        assertEquals(44 + 2 * 48 + 6, CpuPanel.height(105, new CpuState(two, List.of())));
+    }
+
+    @Test
+    void flagsFillTheirRowExactly() {
+        CpuState eight = new CpuState(List.of(), Flag.fromBits("NV-BDIZC", 0)); // 24 wide each, 4 apart
+
+        assertEquals(44 + 10 + 26, CpuPanel.height(16 + 220, eight));
+        assertEquals(44 + 10 + 2 * 26 + 4, CpuPanel.height(16 + 219, eight));
+    }
 }
