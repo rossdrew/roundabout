@@ -1,0 +1,74 @@
+package com.rox.roundabout.memory;
+
+import com.rox.roundabout.Box;
+import com.rox.roundabout.UiHarness;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class MemoryMapTest {
+    private static final Box AREA = new Box(0, 0, 200, 400);
+    private static final AddressFormat FORMAT = AddressFormat.forSize(0x1000, AddressFormat.Style.C);
+    private final MemoryHeat heat = new MemoryHeat(new ArrayMemory(0x1000), 1);
+
+    private int[] drawn(MemoryMap map, UiHarness h) {
+        int[] jump = {-1};
+        h.ui(ui -> {
+            int target = map.draw(ui, AREA.copy(), heat, 0, 0xFF);
+            if (target >= 0) {
+                jump[0] = target;
+            }
+        });
+        return jump;
+    }
+
+    @Test
+    void equalRegionsGetEqualBands() {
+        MemoryMap map = new MemoryMap(List.of(new MemoryRegion("Low", 0, 0x7FF, 0), new MemoryRegion("High", 0x800, 0xFFF, 0)), FORMAT);
+        try (UiHarness h = new UiHarness(200, 400)) {
+            int[] jump = drawn(map, h);
+
+            h.click(100, 100);
+            assertEquals(0x400, jump[0]);
+            h.click(100, 300);
+            assertEquals(0xC00, jump[0]);
+            h.click(100, 0);
+            assertEquals(0, jump[0]);
+        }
+    }
+
+    @Test
+    void draggingPastTheEndStopsAtTheLastAddress() {
+        MemoryMap map = new MemoryMap(List.of(new MemoryRegion("All", 0, 0xFFF, 0)), FORMAT);
+        try (UiHarness h = new UiHarness(200, 600)) {
+            int[] jump = drawn(map, h);
+
+            h.input.move(100, 200).press();
+            h.frame();
+            assertEquals(0x800, jump[0]);
+            h.hover(100, 550);
+            assertEquals(0xFF5, jump[0], "still dragging, clamped to the last pixel row");
+            h.input.release();
+            h.frame();
+            jump[0] = -1;
+            h.hover(100, 100);
+            assertEquals(-1, jump[0], "hovering doesn't jump");
+        }
+    }
+
+    @Test
+    void smallRegionsGetMoreThanTheirShare() {
+        // sqrt sizing: 256 bytes of 4 KB gets a quarter of the height (plus the minimum), not 1/16
+        MemoryMap map = new MemoryMap(List.of(new MemoryRegion("Zero page", 0, 0xFF, 0), new MemoryRegion("Rest", 0x100, 0xFFF, 0)), FORMAT);
+        try (UiHarness h = new UiHarness(200, 400)) {
+            int[] jump = drawn(map, h);
+
+            h.click(100, 90);
+            assertTrue(jump[0] >= 0xE0 && jump[0] <= 0xFF, "zero page: " + jump[0]);
+            h.click(100, 100);
+            assertTrue(jump[0] >= 0x100 && jump[0] < 0x150, "just into the rest: " + jump[0]);
+        }
+    }
+}

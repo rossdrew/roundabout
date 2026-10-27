@@ -24,7 +24,7 @@ public final class MemoryPanel {
     private static final int HISTORY = Math.round(HISTORY_SECONDS / SAMPLE_SECONDS);
     private static final float WATCH_ROW = 40;
 
-    private record Watch(String label, int address, RingSeries history) {
+    record Watch(String label, int address, RingSeries history) {
         Watch(String label, int address) {
             this(label, address, new RingSeries(HISTORY));
         }
@@ -78,6 +78,19 @@ public final class MemoryPanel {
     /** The memory shown. */
     public MemorySource memory() {
         return memory;
+    }
+
+    // package-private for tests
+    List<Watch> watches() {
+        return watches;
+    }
+
+    int selectedWatch() {
+        return selectedWatch;
+    }
+
+    HexGrid hex() {
+        return hex;
     }
 
     /** The address under the mouse in the hex grid, else the selected one. */
