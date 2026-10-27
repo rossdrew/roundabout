@@ -1,9 +1,15 @@
-![Roundabout](resources/roundabout-logo-200.png)
+<img align="left" width="150" height="150" src="resources/roundabout-logo-200.png" alt="Roundabout logo">
+
 # Roundabout
+#### _A GPU-rendered, immediate-mode UI toolkit for real-time debugging tools_
 
-What you lose on the Swings, you gain on the Roundabout: a GPU-rendered, immediate-mode UI toolkit for real-time debugging tools (Skija + LWJGL/GLFW), dark mode first.
+<br clear="left">
 
-Swing is great for forms, for dynamic data like memory activity in an emulator it's just too heavyweight.  A library for creating intuitive views over dynamic data.
+---
+
+Swing is great for forms, for dynamic data like memory activity in an emulator it's just too heavyweight.  A library for creating intuitive views over dynamic data using Skija + LWJGL/GLFW, dark mode first.
+
+![Roundabout debugging an NES in EmuRox](/resources/state_221026.png)
 
 It comes with a ready-made debugger window for emulators and CPU simulators: a live hex view with write heat, a memory map, watches with history, CPU registers and flags, frame timing and run controls. Nothing in it is tied to one machine; the target describes its own memory regions, registers, flags and step controls.
 
@@ -13,6 +19,8 @@ It comes with a ready-made debugger window for emulators and CPU simulators: a l
 ```
 
 The memory map and the watches (list and history) are docked to the hex grid; click the link between two panels (or a folded strip) to fold or unfold one.
+
+## Quick Keys
 
 Keys: `Space` run/pause · each of the target's steps on its own key (the demo: `F` step frame, `I` step instruction) · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it. Space, W and Del can be rebound (or turned off) by passing a `Keymap` to `MemoryDebugger`; a step whose key is already taken is rejected when the window is created.
 
@@ -92,9 +100,10 @@ dependencies {
 
 Skija, LWJGL and the Linux x64 natives come with it (Linux only for now). Run the app with `--enable-native-access=ALL-UNNAMED`.
 
-To release: bump `version` in `build.gradle.kts`, merge to `main`, and publish a GitHub release tagged `v<version>`; the `Publish` workflow tests and publishes it. `./gradlew publishToMavenLocal` installs a build locally for trying changes out.
 
-![Roundabout debugging an NES in EmuRox](/resources/state_221026.png)
+## Releasing 
+
+Bump `version` in `build.gradle.kts`, merge to `main`, and publish a GitHub release tagged `v<version>`; the `Publish` workflow tests and publishes it. `./gradlew publishToMavenLocal` installs a build locally for trying changes out.
 
 ## License
 
