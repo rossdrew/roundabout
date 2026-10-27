@@ -2,6 +2,7 @@ package com.rox.roundabout;
 
 import org.junit.jupiter.api.Test;
 
+import static com.rox.roundabout.Pixels.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DockTest {
@@ -81,5 +82,41 @@ class DockTest {
         assertFalse(dock.isOpen());
         dock.toggle();
         assertTrue(dock.isOpen());
+    }
+
+    @Test
+    void aFoldedDockIsAStripOfItsOwn() {
+        Dock dock = new Dock("Map", Dock.Side.LEFT);
+        dock.setOpen(false);
+        try (UiHarness h = new UiHarness(500, 300)) {
+            Theme t = h.ui.theme;
+            h.ui(ui -> dock.cut(ui, AREA.copy(), 100)).hover(400, 200);
+
+            assertColour(t.panel, h.pixel(12, 200), "strip");
+            assertColour(t.panel, h.pixel(22, 200), "24px wide");
+            assertColour(t.background, h.pixel(26, 200), "gutter");
+            h.hover(12, 200);
+            assertColour(t.panelRaised, h.pixel(12, 250), "hovered");
+        }
+    }
+
+    @Test
+    void theLinkIsBrightWhenOpenAndDimWhenFolded() {
+        Dock dock = new Dock("Map", Dock.Side.LEFT);
+        Box link = new Box(94, 6, 22, 16); // across the gutter at x 100-110, level with the header
+        try (UiHarness h = new UiHarness(500, 300)) {
+            Theme t = h.ui.theme;
+            h.ui(ui -> dock.cut(ui, AREA.copy(), 100)).hover(400, 200);
+            assertTrue(h.contains(link, over(t.background, Theme.withAlpha(t.accent, 0.55f))), "open");
+            assertFalse(h.contains(link, t.textDim), "open");
+
+            dock.setOpen(false);
+            h.frame();
+            assertTrue(h.contains(new Box(18, 6, 22, 16), t.textDim), "folded");
+
+            dock.setOpen(true);
+            h.hover(105, 14);
+            assertTrue(h.contains(link, t.accent), "hovered");
+        }
     }
 }
