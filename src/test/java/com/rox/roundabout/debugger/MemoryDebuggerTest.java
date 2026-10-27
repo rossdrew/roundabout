@@ -1,5 +1,6 @@
 package com.rox.roundabout.debugger;
 
+import com.rox.roundabout.UiHarness;
 import com.rox.roundabout.debugger.DebugTarget.Step;
 import org.junit.jupiter.api.Test;
 
@@ -46,5 +47,21 @@ class MemoryDebuggerTest {
 
         new Keymap(GLFW_KEY_P, GLFW_KEY_W, GLFW_KEY_DELETE)
                 .checkNoClash(List.of(new Step("Step frame", GLFW_KEY_SPACE, () -> {})));
+    }
+
+    @Test
+    void aWholeFrameDrawsOffScreenAndTakesKeys() {
+        FakeTarget target = new FakeTarget();
+        MemoryDebugger debugger = new MemoryDebugger(target, "test");
+        try (UiHarness h = new UiHarness(1440, 860)) {
+            h.scene(debugger::frame).frame();
+
+            h.key(GLFW_KEY_F);
+            assertEquals(0, target.steps, "steps only run while paused");
+            h.key(GLFW_KEY_SPACE);
+            assertTrue(target.paused);
+            h.key(GLFW_KEY_F);
+            assertEquals(1, target.steps);
+        }
     }
 }

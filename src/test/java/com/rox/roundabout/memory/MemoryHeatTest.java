@@ -5,16 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemoryHeatTest {
-    private final int[] bytes = new int[16];
-    private final MemorySource memory = new MemorySource() {
-        public int size() {
-            return bytes.length;
-        }
-
-        public int peek(int address) {
-            return bytes[address];
-        }
-    };
+    private final ArrayMemory memory = new ArrayMemory(16);
+    private final int[] bytes = memory.bytes;
 
     @Test
     void writesHeatUpThenDecayByHalfLife() {
