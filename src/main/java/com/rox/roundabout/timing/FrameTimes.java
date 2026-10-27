@@ -21,6 +21,9 @@ public final class FrameTimes {
     private final RingSeries intervalsMs;
 
     /**
+     * An empty stream.
+     *
+     * @param name     shown above its graph, e.g. "Emulated"
      * @param history  how many intervals to keep, e.g. 600 for ten seconds at 60 fps
      * @param budgetMs the intended interval between events, e.g. 1000 / 60f for 60 fps or 20 for 50 Hz PAL
      */
@@ -57,10 +60,12 @@ public final class FrameTimes {
         }
     }
 
+    /** The stream's name, e.g. "Emulated" or "Displayed". */
     public String name() {
         return name;
     }
 
+    /** The intended interval between events. */
     public float budgetMs() {
         return budgetMs;
     }

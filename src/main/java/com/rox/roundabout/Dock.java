@@ -9,9 +9,21 @@ import io.github.humbleui.types.RRect;
  * unfolds it on click), its rings come apart, and the caller skips drawing the panel entirely.
  */
 public final class Dock {
-    public enum Side { LEFT, RIGHT, TOP, BOTTOM }
+    /** The edge of the area a dock's panel is cut from. */
+    public enum Side {
+        /** Docked on the left. */
+        LEFT,
+        /** Docked on the right. */
+        RIGHT,
+        /** Docked above. */
+        TOP,
+        /** Docked below. */
+        BOTTOM
+    }
 
+    /** Space between the docked panel and the rest, where the link sits. */
     public static final float GUTTER = 10;
+    /** Size of a folded panel's strip. */
     public static final float FOLDED = 24;
     /** Where the link sits along the shared edge: level with a panel header, or in from the corner. */
     private static final float LINK_OFFSET = 14;
@@ -20,23 +32,28 @@ public final class Dock {
     private final Side side;
     private boolean open = true;
 
+    /** A dock, open, whose panel is called {@code title} and cut from {@code side}. */
     public Dock(String title, Side side) {
         this.title = title;
         this.side = side;
     }
 
+    /** The docked panel's title, also shown on its folded strip. */
     public String title() {
         return title;
     }
 
+    /** True unless folded. */
     public boolean isOpen() {
         return open;
     }
 
+    /** Folds ({@code false}) or unfolds the panel. */
     public void setOpen(boolean open) {
         this.open = open;
     }
 
+    /** Folds an open panel, or unfolds a folded one. */
     public void toggle() {
         open = !open;
     }

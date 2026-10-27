@@ -9,22 +9,38 @@ import io.github.humbleui.skija.Typeface;
 
 /** Colour tokens and fonts. Colours are ARGB. */
 public final class Theme {
+    /** Behind all panels. */
     public final int background;
+    /** Panel fill. */
     public final int panel;
+    /** Raised surfaces on a panel: tiles, hovered rows, tooltips. */
     public final int panelRaised;
+    /** Panel outlines and dividers. */
     public final int border;
+    /** Primary text. */
     public final int text;
+    /** Secondary text: labels, headings. */
     public final int textDim;
+    /** Hints and disabled text. */
     public final int textFaint;
+    /** Selection, links and primary buttons. */
     public final int accent;
+    /** Positive state, e.g. a set flag or running. */
     public final int good;
+    /** Warning state, e.g. paused; also the cool end of the heat ramp. */
     public final int warn;
+    /** The hot end of the heat ramp. */
     public final int hot;
 
+    /** Body text. */
     public final Font ui;
+    /** Bold body text. */
     public final Font uiBold;
+    /** Small text: headings, labels, hints. */
     public final Font uiSmall;
+    /** Monospaced text for numbers. */
     public final Font mono;
+    /** Large monospaced text for readouts. */
     public final Font monoLarge;
 
     private Theme(int background, int panel, int panelRaised, int border, int text, int textDim, int textFaint,
@@ -62,6 +78,7 @@ public final class Theme {
                 .setHinting(FontHinting.SLIGHT);
     }
 
+    /** The dark theme, with fonts picked from those installed (Inter, Adwaita, Noto or the system default). */
     public static Theme dark() {
         return new Theme(
                 0xFF0D0F13, // background
@@ -88,6 +105,7 @@ public final class Theme {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
+    /** {@code colour} with its alpha replaced by {@code alpha} (0-1). */
     public static int withAlpha(int colour, float alpha) {
         return ((int) (Math.clamp(alpha, 0f, 1f) * 255) << 24) | (colour & 0xFFFFFF);
     }

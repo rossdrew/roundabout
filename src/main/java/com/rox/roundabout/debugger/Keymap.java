@@ -21,6 +21,11 @@ public record Keymap(int runPause, int watch, int unwatch) {
     /** Space run/pause, W watch, Del unwatch. */
     public static final Keymap DEFAULT = new Keymap(GLFW_KEY_SPACE, GLFW_KEY_W, GLFW_KEY_DELETE);
 
+    /**
+     * Checks no key is bound twice or clashes with the hex view; {@code GLFW_KEY_UNKNOWN} may repeat.
+     *
+     * @throws IllegalArgumentException if a key is bound twice or is one of {@link HexGrid#NAVIGATION_KEYS}
+     */
     public Keymap {
         List<Integer> seen = new ArrayList<>();
         for (int key : new int[]{runPause, watch, unwatch}) {

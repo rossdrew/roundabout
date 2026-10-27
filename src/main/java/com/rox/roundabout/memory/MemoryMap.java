@@ -18,6 +18,7 @@ public final class MemoryMap {
     private final List<MemoryRegion> regions;
     private final AddressFormat format;
 
+    /** A map of {@code regions}, labelled with {@code format}. */
     public MemoryMap(List<MemoryRegion> regions, AddressFormat format) {
         this.regions = regions;
         this.format = format;

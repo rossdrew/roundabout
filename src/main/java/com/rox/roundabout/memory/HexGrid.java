@@ -42,6 +42,7 @@ public final class HexGrid {
     private int hovered = -1;
     private int activated = -1;
 
+    /** A grid over addresses {@code 0} to {@code size - 1}, 16 bytes per row, coloured by {@code regions}. */
     public HexGrid(int size, List<MemoryRegion> regions, AddressFormat format) {
         this.rows = size / BYTES_PER_ROW;
         this.regions = regions;
@@ -49,11 +50,13 @@ public final class HexGrid {
         this.gutterWidth = 24 + GUTTER_CHAR * format.address(0).length();
     }
 
+    /** The width that shows a whole row with some room to spare. */
     public float preferredWidth() {
         return gutterWidth + BYTES_PER_ROW * CELL_WIDTH + GROUP_GAP + ASCII_GAP
                 + BYTES_PER_ROW * ASCII_WIDTH + SCROLLBAR_WIDTH + 100;
     }
 
+    /** The selected address; starts at 0. */
     public int selected() {
         return selected;
     }
@@ -68,10 +71,12 @@ public final class HexGrid {
         return activated;
     }
 
+    /** The first address on screen. */
     public int firstVisibleAddress() {
         return (int) scroll * BYTES_PER_ROW;
     }
 
+    /** The last address on screen. */
     public int lastVisibleAddress() {
         return Math.min(rows, (int) scroll + visibleRows) * BYTES_PER_ROW - 1;
     }
@@ -81,6 +86,7 @@ public final class HexGrid {
         targetScroll = clampScroll(address / BYTES_PER_ROW - visibleRows / 2f);
     }
 
+    /** Draws the visible rows into {@code area} and handles the mouse and {@link #NAVIGATION_KEYS}. */
     public void draw(Ui ui, Box area, MemoryHeat heat, float dt) {
         Theme t = ui.theme;
         ensureText(t);

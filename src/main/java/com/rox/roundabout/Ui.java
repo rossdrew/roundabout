@@ -17,8 +17,11 @@ import java.util.Locale;
  * widgets return their interaction result directly.
  */
 public final class Ui {
+    /** The colours and fonts widgets draw with. */
     public final Theme theme;
+    /** This frame's canvas, set by {@link #begin}; draw on it directly for anything the widgets don't cover. */
     public Canvas canvas;
+    /** This frame's input, set by {@link #begin}. */
     public Input input;
 
     private final Paint fill = new Paint().setAntiAlias(true);
@@ -30,10 +33,12 @@ public final class Ui {
     private final List<Runnable> overlays = new ArrayList<>();
     private float width, height;
 
+    /** A UI drawing with {@code theme}. */
     public Ui(Theme theme) {
         this.theme = theme;
     }
 
+    /** Starts a frame: call once per frame, before any widget, with the window's canvas, input and logical size. */
     public void begin(Canvas canvas, Input input, float width, float height) {
         this.canvas = canvas;
         this.input = input;
@@ -45,6 +50,7 @@ public final class Ui {
         }
     }
 
+    /** Ends a frame: draws overlays and the tooltip, and releases the mouse if it was let go. */
     public void end() {
         for (Runnable overlay : overlays) {
             overlay.run();
@@ -60,6 +66,7 @@ public final class Ui {
 
     // ---- interaction -------------------------------------------------------------------------
 
+    /** True when the mouse is over {@code box} and no widget is holding it. */
     public boolean hovered(Box box) {
         return active == null && box.contains(input.mouseX, input.mouseY);
     }
@@ -78,10 +85,12 @@ public final class Ui {
         return isActive(id) && input.mouseReleased && box.contains(input.mouseX, input.mouseY);
     }
 
+    /** True while widget {@code id} holds the mouse (pressed on it and not yet released). */
     public boolean isActive(String id) {
         return id.equals(active);
     }
 
+    /** Shows {@code text} as a tooltip at the mouse this frame; lines are split on {@code \n}, the first in bright text. */
     public void setTooltip(String text) {
         tooltip = text;
     }
@@ -93,30 +102,36 @@ public final class Ui {
 
     // ---- primitives --------------------------------------------------------------------------
 
+    /** Fills {@code box} with an ARGB colour. */
     public void fill(Box box, int colour) {
         fill.setColor(colour);
         canvas.drawRect(box.rect(), fill);
     }
 
+    /** Fills {@code box} with rounded corners. */
     public void fillRound(Box box, float radius, int colour) {
         fill.setColor(colour);
         canvas.drawRRect(RRect.makeXYWH(box.x, box.y, box.w, box.h, radius), fill);
     }
 
+    /** Outlines {@code box} with rounded corners, on the pixel grid so the 1 px line stays sharp. */
     public void strokeRound(Box box, float radius, int colour) {
         stroke.setColor(colour);
         canvas.drawRRect(RRect.makeXYWH(box.x + 0.5f, box.y + 0.5f, box.w - 1, box.h - 1, radius), stroke);
     }
 
+    /** A 1 px line. */
     public void line(float x0, float y0, float x1, float y1, int colour) {
         stroke.setColor(colour);
         canvas.drawLine(x0, y0, x1, y1, stroke);
     }
 
+    /** The shared fill paint set to {@code colour}; valid until the next drawing call. */
     public Paint paint(int colour) {
         return fill.setColor(colour);
     }
 
+    /** The shared stroke paint set to {@code colour} and {@code width}; valid until the next drawing call. */
     public Paint strokePaint(int colour, float width) {
         return stroke.setColor(colour).setStrokeWidth(width);
     }
@@ -127,26 +142,31 @@ public final class Ui {
         return font.measureTextWidth(text);
     }
 
+    /** Draws text right-aligned, vertically centred in {@code box}. */
     public void textRight(Box box, String text, Font font, int colour) {
         float width = font.measureTextWidth(text);
         canvas.drawString(text, box.right() - width, baseline(box, font), font, paint(colour));
     }
 
+    /** Draws text centred in {@code box}. */
     public void textCentred(Box box, String text, Font font, int colour) {
         float width = font.measureTextWidth(text);
         canvas.drawString(text, box.x + (box.w - width) / 2, baseline(box, font), font, paint(colour));
     }
 
+    /** The baseline that vertically centres a line of {@code font} in {@code box}. */
     public static float baseline(Box box, Font font) {
         FontMetrics m = font.getMetrics();
         return box.centerY() - (m.getAscent() + m.getDescent()) / 2;
     }
 
+    /** Clips drawing to {@code box} until {@link #unclip}; calls nest. */
     public void clip(Box box) {
         canvas.save();
         canvas.clipRect(box.rect());
     }
 
+    /** Ends the innermost {@link #clip}. */
     public void unclip() {
         canvas.restore();
     }
@@ -174,6 +194,7 @@ public final class Ui {
                 : title.substring(0, details).toUpperCase(Locale.ROOT) + title.substring(details);
     }
 
+    /** A button in its normal state; returns true when clicked. */
     public boolean button(String id, Box box, String label) {
         return button(id, box, label, false);
     }

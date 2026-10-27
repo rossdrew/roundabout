@@ -37,11 +37,16 @@ public final class MemoryDebugger {
     private volatile GlfwWindow window;
     private volatile boolean closeRequested;
 
+    /** A debugger over {@code target} with the default keys ({@link Keymap#DEFAULT}); call {@link #run()} to show it. */
     public MemoryDebugger(DebugTarget target, String title) {
         this(target, title, Keymap.DEFAULT);
     }
 
-    /** @throws IllegalArgumentException if one of the target's steps uses a key in {@code keymap} */
+    /**
+     * A debugger over {@code target} with its own keys bound as {@code keymap}; call {@link #run()} to show it.
+     *
+     * @throws IllegalArgumentException if one of the target's steps uses a key in {@code keymap}
+     */
     public MemoryDebugger(DebugTarget target, String title, Keymap keymap) {
         keymap.checkNoClash(target.steps());
         this.target = target;

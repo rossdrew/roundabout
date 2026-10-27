@@ -39,6 +39,7 @@ public final class CpuPanel {
         return h;
     }
 
+    /** Draws {@code cpu} as a "CPU" panel filling {@code area}. */
     public static void draw(Ui ui, Box area, CpuState cpu) {
         Theme t = ui.theme;
         Box content = ui.panel(area, "CPU");
