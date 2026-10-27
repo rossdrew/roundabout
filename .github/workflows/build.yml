@@ -32,10 +32,37 @@ jobs:
           java-version: 26
       - uses: gradle/actions/setup-gradle@v4
       - name: Mutation tests
-        run: ./gradlew pitest
+        run: ./gradlew pitestBadge
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pitest-report
           path: build/reports/pitest
+      - name: Prepare Pages site
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p public/pitest
+          cp build/reports/pitest-badge/pitest.json public/pitest.json
+          cp -r build/reports/pitest/* public/pitest/
+      - name: Upload Pages site
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+  # main only: the mutation badge (pitest.json) and report at https://rossdrew.github.io/roundabout/
+  pages:
+    if: github.event_name == 'push'
+    needs: mutation
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

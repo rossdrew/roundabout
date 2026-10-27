@@ -4,6 +4,7 @@
 #### _A GPU-rendered, immediate-mode UI toolkit for real-time debugging tools_
 
 [![Build](https://github.com/rossdrew/roundabout/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rossdrew/roundabout/actions/workflows/build.yml)
+[![Mutation Coverage](https://img.shields.io/endpoint?url=https://rossdrew.github.io/roundabout/pitest.json)](https://rossdrew.github.io/roundabout/pitest/)
 
 <br clear="left">
 
