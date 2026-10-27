@@ -7,6 +7,11 @@ API tidy before going public. Breaking:
 - **Packages by feature:** the `data` package is gone. `chart`: `Graphs`, `RingSeries`. `memory`: `MemorySource`, `MemoryRegion`, `MemoryHeat`, `AddressFormat`, `HexGrid`, `MemoryMap`, `MemoryPanel` (from `debugger`). `timing`: `FrameTimes`, `FrameTimingGraph`.
 - `DebugTarget.Label` → `memory.NamedAddress`, so `memory` doesn't depend on `debugger`.
 
+Added:
+
+- **Configurable keys:** `Keymap(runPause, watch, unwatch)` passed to `MemoryDebugger(target, title, keymap)`; `GLFW_KEY_UNKNOWN` turns a key off. Hints follow the keymap. The constructor rejects a step key that is already bound (keymap or hex navigation, `HexGrid.NAVIGATION_KEYS`).
+- `MemoryPanel.handleKeys(input, watchKey, unwatchKey)`.
+
 ## 0.2.0
 
 Generalised for any emulator or CPU simulator. Breaking changes to `DebugTarget` and the widgets:

@@ -14,7 +14,7 @@ It comes with a ready-made debugger window for emulators and CPU simulators: a l
 
 The memory map and the watches (list and history) are docked to the hex grid; click the link between two panels (or a folded strip) to fold or unfold one.
 
-Keys: `Space` run/pause · each of the target's steps on its own key (the demo: `F` step frame, `I` step instruction) · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it.
+Keys: `Space` run/pause · each of the target's steps on its own key (the demo: `F` step frame, `I` step instruction) · arrows / PgUp / PgDn / Home / End navigate · `W`, `Enter` or double-click adds a watch · `Del` removes it · double-clicking a watch jumps the hex view to it. Space, W and Del can be rebound (or turned off) by passing a `Keymap` to `MemoryDebugger`; a step whose key is already taken is rejected when the window is created.
 
 ## Embedding the debugger
 
