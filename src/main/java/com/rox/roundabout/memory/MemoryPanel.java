@@ -110,7 +110,7 @@ public final class MemoryPanel {
         }
         if (unwatchKey != GLFW_KEY_UNKNOWN && input.keyPressed(unwatchKey) && !watches.isEmpty()) {
             watches.remove(selectedWatch);
-            selectedWatch = Math.clamp(selectedWatch, 0, watches.size() - 1);
+            selectedWatch = Math.max(0, Math.min(selectedWatch, watches.size() - 1));
             revealWatch = true;
         }
     }
