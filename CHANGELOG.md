@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 (unreleased)
+
+API tidy before going public. Breaking:
+
+- **Packages by feature:** the `data` package is gone. `chart`: `Graphs`, `RingSeries`. `memory`: `MemorySource`, `MemoryRegion`, `MemoryHeat`, `AddressFormat`, `HexGrid`, `MemoryMap`, `MemoryPanel` (from `debugger`). `timing`: `FrameTimes`, `FrameTimingGraph`.
+- `DebugTarget.Label` → `memory.NamedAddress`, so `memory` doesn't depend on `debugger`.
+
 ## 0.2.0
 
 Generalised for any emulator or CPU simulator. Breaking changes to `DebugTarget` and the widgets:

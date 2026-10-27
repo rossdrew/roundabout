@@ -1,5 +1,6 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.timing;
 
+import com.rox.roundabout.chart.RingSeries;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

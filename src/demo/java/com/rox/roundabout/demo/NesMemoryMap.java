@@ -1,6 +1,6 @@
 package com.rox.roundabout.demo;
 
-import com.rox.roundabout.data.MemoryRegion;
+import com.rox.roundabout.memory.MemoryRegion;
 
 import java.util.List;
 

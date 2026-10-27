@@ -1,4 +1,4 @@
-package com.rox.roundabout.debugger;
+package com.rox.roundabout.memory;
 
 import org.junit.jupiter.api.Test;
 

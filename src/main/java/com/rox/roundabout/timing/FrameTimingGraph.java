@@ -1,8 +1,10 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.timing;
 
 import com.rox.roundabout.Box;
 import com.rox.roundabout.Theme;
 import com.rox.roundabout.Ui;
+import com.rox.roundabout.chart.Graphs;
+import com.rox.roundabout.chart.RingSeries;
 
 /**
  * One {@link FrameTimes} stream as a row: summary numbers beside a graph of every recent frame interval,

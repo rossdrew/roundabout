@@ -1,4 +1,6 @@
-package com.rox.roundabout.data;
+package com.rox.roundabout.timing;
+
+import com.rox.roundabout.chart.RingSeries;
 
 /**
  * Timestamps of a stream of events, such as frames, recorded on one producer thread and turned into

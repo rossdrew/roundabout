@@ -1,17 +1,11 @@
-package com.rox.roundabout.debugger;
+package com.rox.roundabout.memory;
 
 import com.rox.roundabout.Box;
 import com.rox.roundabout.Dock;
 import com.rox.roundabout.Theme;
 import com.rox.roundabout.Ui;
-import com.rox.roundabout.data.AddressFormat;
-import com.rox.roundabout.data.Graphs;
-import com.rox.roundabout.data.HexGrid;
-import com.rox.roundabout.data.MemoryHeat;
-import com.rox.roundabout.data.MemoryMap;
-import com.rox.roundabout.data.MemoryRegion;
-import com.rox.roundabout.data.MemorySource;
-import com.rox.roundabout.data.RingSeries;
+import com.rox.roundabout.chart.Graphs;
+import com.rox.roundabout.chart.RingSeries;
 import com.rox.roundabout.window.Input;
 
 import java.util.ArrayList;
@@ -52,11 +46,11 @@ public final class MemoryPanel {
     private final Dock watchDock = new Dock("Watches", Dock.Side.BOTTOM);
     private final Dock historyDock = new Dock("History", Dock.Side.RIGHT);
 
-    public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<DebugTarget.Label> labels) {
+    public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<NamedAddress> labels) {
         this(memory, regions, labels, AddressFormat.Style.C);
     }
 
-    public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<DebugTarget.Label> labels,
+    public MemoryPanel(MemorySource memory, List<MemoryRegion> regions, List<NamedAddress> labels,
                        AddressFormat.Style style) {
         this.memory = memory;
         this.regions = regions;
@@ -64,7 +58,7 @@ public final class MemoryPanel {
         heat = new MemoryHeat(memory, 0.35f);
         hex = new HexGrid(memory.size(), regions, format);
         map = new MemoryMap(regions, format);
-        for (DebugTarget.Label label : labels) {
+        for (NamedAddress label : labels) {
             watches.add(new Watch(label.name(), label.address()));
         }
     }
