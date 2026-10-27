@@ -77,7 +77,8 @@ public final class MemoryDebugger {
         }
     }
 
-    private void frame(Canvas canvas, Input input, float width, float height) {
+    // package-private for tests, which draw frames off-screen
+    void frame(Canvas canvas, Input input, float width, float height) {
         long start = System.nanoTime();
         float dt = Math.min(0.1f, (start - lastFrame) / 1e9f);
         lastFrame = start;
