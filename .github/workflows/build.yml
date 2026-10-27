@@ -19,6 +19,8 @@ jobs:
           distribution: temurin
           java-version: 26
       - uses: gradle/actions/setup-gradle@v4
+      - name: Install Skia's native dependencies
+        run: sudo apt-get update -q && sudo apt-get install -yq libegl1
       - name: Test, javadoc and demo
         run: ./gradlew test javadoc compileDemoJava
 
@@ -31,6 +33,8 @@ jobs:
           distribution: temurin
           java-version: 26
       - uses: gradle/actions/setup-gradle@v4
+      - name: Install Skia's native dependencies
+        run: sudo apt-get update -q && sudo apt-get install -yq libegl1
       - name: Mutation tests
         run: ./gradlew pitestBadge
       - name: Upload report
