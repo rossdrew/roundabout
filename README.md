@@ -3,6 +3,8 @@
 ### Roundabout
 #### _A GPU-rendered, immediate-mode UI toolkit for real-time debugging tools_
 
+[![Build](https://github.com/rossdrew/roundabout/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rossdrew/roundabout/actions/workflows/build.yml)
+
 <br clear="left">
 
 ---
