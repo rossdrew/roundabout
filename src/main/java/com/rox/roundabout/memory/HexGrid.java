@@ -24,6 +24,10 @@ public final class HexGrid {
     private static final float ASCII_WIDTH = 9;
     private static final float SCROLLBAR_WIDTH = 8;
 
+    /** Keys the grid always handles: arrows, Page Up/Down, Home/End move the selection; Enter activates it. */
+    public static final List<Integer> NAVIGATION_KEYS = List.of(GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_UP,
+            GLFW_KEY_DOWN, GLFW_KEY_PAGE_UP, GLFW_KEY_PAGE_DOWN, GLFW_KEY_HOME, GLFW_KEY_END, GLFW_KEY_ENTER);
+
     private final List<MemoryRegion> regions;
     private final AddressFormat format;
     private final float gutterWidth;

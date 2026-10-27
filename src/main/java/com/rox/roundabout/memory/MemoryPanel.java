@@ -93,11 +93,17 @@ public final class MemoryPanel {
         }
     }
 
+    /** Handles W (watch the selected byte) and Del (remove the selected watch). */
     public void handleKeys(Input input) {
-        if (input.keyPressed(GLFW_KEY_W)) {
+        handleKeys(input, GLFW_KEY_W, GLFW_KEY_DELETE);
+    }
+
+    /** Handles {@code watchKey} and {@code unwatchKey}; {@code GLFW_KEY_UNKNOWN} turns one off. */
+    public void handleKeys(Input input, int watchKey, int unwatchKey) {
+        if (watchKey != GLFW_KEY_UNKNOWN && input.keyPressed(watchKey)) {
             addWatch(hex.selected());
         }
-        if (input.keyPressed(GLFW_KEY_DELETE) && !watches.isEmpty()) {
+        if (unwatchKey != GLFW_KEY_UNKNOWN && input.keyPressed(unwatchKey) && !watches.isEmpty()) {
             watches.remove(selectedWatch);
             selectedWatch = Math.clamp(selectedWatch, 0, watches.size() - 1);
             revealWatch = true;

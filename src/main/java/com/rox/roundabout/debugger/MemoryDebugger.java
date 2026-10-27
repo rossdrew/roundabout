@@ -14,6 +14,7 @@ import com.rox.roundabout.window.GlfwWindow;
 import com.rox.roundabout.window.Input;
 import io.github.humbleui.skija.Canvas;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -28,6 +29,7 @@ public final class MemoryDebugger {
     private final String title;
     private final Ui ui = new Ui(Theme.dark());
     private final MemoryPanel memory;
+    private final Keymap keymap;
 
     private final RingSeries frameMs = new RingSeries(120);
     private final RingSeries writesPerFrame = new RingSeries(120);
@@ -36,8 +38,15 @@ public final class MemoryDebugger {
     private volatile boolean closeRequested;
 
     public MemoryDebugger(DebugTarget target, String title) {
+        this(target, title, Keymap.DEFAULT);
+    }
+
+    /** @throws IllegalArgumentException if one of the target's steps uses a key in {@code keymap} */
+    public MemoryDebugger(DebugTarget target, String title, Keymap keymap) {
+        keymap.checkNoClash(target.steps());
         this.target = target;
         this.title = title;
+        this.keymap = keymap;
         memory = new MemoryPanel(target.memory(), target.regions(), target.labels(), target.numberStyle());
     }
 
@@ -101,7 +110,7 @@ public final class MemoryDebugger {
     }
 
     private void handleKeys(Input input) {
-        if (input.keyPressed(GLFW_KEY_SPACE)) {
+        if (keymap.runPause() != GLFW_KEY_UNKNOWN && input.keyPressed(keymap.runPause())) {
             togglePause();
         }
         for (DebugTarget.Step step : target.steps()) {
@@ -109,7 +118,7 @@ public final class MemoryDebugger {
                 step.run().run();
             }
         }
-        memory.handleKeys(input);
+        memory.handleKeys(input, keymap.watch(), keymap.unwatch());
     }
 
     private void togglePause() {
@@ -171,19 +180,27 @@ public final class MemoryDebugger {
         ui.text(row, String.format("%s  %-14s %s  %3d  %s   %s", format.address(address),
                 region == null ? "" : region.name(), format.value(v), v, format.binary(v),
                 target.memory().isEditable(address) ? "writable" : "read-only"), t.mono, t.textDim);
-        ui.textRight(row, keyHints(target.steps()), t.uiSmall, t.textFaint);
+        ui.textRight(row, keyHints(keymap, target.steps()), t.uiSmall, t.textFaint);
     }
 
-    static String keyHints(List<DebugTarget.Step> steps) {
-        StringBuilder hints = new StringBuilder("Space run/pause");
+    static String keyHints(Keymap keymap, List<DebugTarget.Step> steps) {
+        List<String> hints = new ArrayList<>();
+        hint(hints, keymap.runPause(), "run/pause");
         for (DebugTarget.Step step : steps) {
-            if (step.key() != GLFW_KEY_UNKNOWN) {
-                hints.append("   ").append(Input.keyName(step.key()))
-                        .append(' ').append(step.label().toLowerCase(Locale.ROOT));
-            }
+            hint(hints, step.key(), step.label().toLowerCase(Locale.ROOT));
         }
-        return hints.append("   ↑↓ PgUp PgDn navigate   W / double-click watch   double-click watch to jump   Del unwatch")
-                .toString();
+        hints.add("↑↓ PgUp PgDn navigate");
+        hints.add(keymap.watch() == GLFW_KEY_UNKNOWN ? "double-click watch"
+                : Input.keyName(keymap.watch()) + " / double-click watch");
+        hints.add("double-click watch to jump");
+        hint(hints, keymap.unwatch(), "unwatch");
+        return String.join("   ", hints);
+    }
+
+    private static void hint(List<String> hints, int key, String action) {
+        if (key != GLFW_KEY_UNKNOWN) {
+            hints.add(Input.keyName(key) + " " + action);
+        }
     }
 
     private void frameTiming(Box area, List<FrameTimes> timings) {
