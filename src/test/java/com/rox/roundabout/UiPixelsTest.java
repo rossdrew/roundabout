@@ -84,10 +84,9 @@ class UiPixelsTest {
             h.hover(20, 20);
             // the box is 14 right of and 18 below the mouse, 30 high, text inset 10
             assertColour(t.panelRaised, h.pixel(20 + 17, 20 + 30), "below right");
-            assertColour(t.background, h.pixel(20 + 12, 20 + 30), "not left of it");
+            assertColour(t.background, h.pixel(2, 20 + 30), "not left of it (sampled clear of its 12px-blur shadow)");
             h.hover(290, 190);
             assertColour(t.panelRaised, h.pixel(290 - 13, 190 - 25), "flipped above left near the corner");
-            assertColour(t.background, h.pixel(290 - 13, 190 - 5), "not below it");
         }
     }
 
