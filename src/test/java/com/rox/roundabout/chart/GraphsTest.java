@@ -94,6 +94,8 @@ class GraphsTest {
                     0.5f, v -> "", v -> "v" + v));
             h.hover(164, 100); // the middle sample: 4, at x 164
             assertTrue(h.contains(new Box(160, 6 + 188 * 0.6f - 4, 8, 8), COLOUR), "marker on the hovered sample");
+            // the tooltip box starts 14 right of and 18 below the mouse; sampled left of its text
+            Pixels.assertColour(h.ui.theme.panelRaised, h.pixel(164 + 17, 100 + 30), "tooltip with the sample");
         }
     }
 }
