@@ -77,6 +77,11 @@ pitest {
     targetTests = pitestScope
     // needs a display and an OpenGL context
     excludedClasses = listOf("com.rox.roundabout.window.GlfwWindow*")
+    // pure decoration, nothing to assert short of comparing whole images: Dock's link rings and
+    // HexGrid's column header (names match in every class, so keep them unique)
+    excludedMethods = listOf("drawLink", "drawHeader")
+    // fail below the current score less a little slack; a narrowed scope scores lower, so no gate there
+    mutationThreshold = if (hasProperty("pitestScope")) 0 else 72
     jvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
     threads = Runtime.getRuntime().availableProcessors()
     outputFormats = listOf("HTML", "XML")

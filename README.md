@@ -103,6 +103,11 @@ dependencies {
 
 Skija, LWJGL and the Linux x64 natives come with it (Linux only for now). Run the app with `--enable-native-access=ALL-UNNAMED`.
 
+## Testing
+
+`./gradlew test` runs the tests headless: widgets draw into an off-screen Skia surface (`UiHarness`), with input fed frame by frame, and tests check colours at chosen pixels rather than whole images, since fonts differ between machines. Linux needs `libEGL.so.1` (`libegl1` on Debian/Ubuntu) even without a display.
+
+`./gradlew pitest` runs [Pitest](https://pitest.org) mutation tests, with the report in `build/reports/pitest`. It fails below a 72% mutation score (`mutationThreshold` in `build.gradle.kts`); raise it as the score rises. The full run takes a few minutes. While working on one package, narrow it with `-PpitestScope=com.rox.roundabout.memory.*` (no threshold applies then). `GlfwWindow` (needs a real window) and the purely decorative `drawLink`/`drawHeader` are left out. Every PR runs the mutation tests, and `main` publishes the badge and report.
 
 ## Releasing 
 

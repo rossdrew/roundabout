@@ -1,6 +1,6 @@
 name: Build
 
-# Tests, javadoc, the demo and mutation tests on every PR and every push to main
+# Tests, javadoc, the demo and mutation tests (failing below the threshold in build.gradle.kts) on every PR and every push to main
 on:
   pull_request:
   push:
