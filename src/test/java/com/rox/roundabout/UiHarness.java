@@ -17,6 +17,7 @@ public final class UiHarness implements AutoCloseable {
     public final InputDriver input = new InputDriver();
     private final int width, height;
     private final Surface surface;
+    private Bitmap frame; // the last frame's pixels, read on first use
     private GlfwWindow.Renderer scene = (canvas, in, w, h) -> {
     };
 
@@ -45,6 +46,10 @@ public final class UiHarness implements AutoCloseable {
     public UiHarness frame() {
         scene.frame(surface.getCanvas(), input.input(), width, height);
         input.endFrame();
+        if (frame != null) {
+            frame.close();
+            frame = null;
+        }
         return this;
     }
 
@@ -77,15 +82,42 @@ public final class UiHarness implements AutoCloseable {
 
     /** The colour of a pixel in the last frame, as ARGB. */
     public int pixel(int x, int y) {
-        try (Bitmap bitmap = new Bitmap()) {
-            bitmap.allocN32Pixels(1, 1);
-            surface.readPixels(bitmap, x, y);
-            return bitmap.getColor(0, 0);
+        if (frame == null) {
+            frame = new Bitmap();
+            frame.allocN32Pixels(width, height);
+            surface.readPixels(frame, 0, 0);
         }
+        return frame.getColor(x, y);
+    }
+
+    /** The y in {@code [y0, y1)} at column {@code x} whose colour is closest to {@code colour}, e.g. where a line crosses. */
+    public int rowNearest(int x, int y0, int y1, int colour) {
+        int best = y0;
+        for (int y = y0; y < y1; y++) {
+            if (Pixels.distance(pixel(x, y), colour) < Pixels.distance(pixel(x, best), colour)) {
+                best = y;
+            }
+        }
+        return best;
+    }
+
+    /** True when some pixel in {@code box} is within {@link Pixels#TOLERANCE} of {@code colour}. */
+    public boolean contains(Box box, int colour) {
+        for (int y = (int) box.y; y < box.bottom(); y++) {
+            for (int x = (int) box.x; x < box.right(); x++) {
+                if (Pixels.distance(pixel(x, y), colour) <= Pixels.TOLERANCE) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public void close() {
+        if (frame != null) {
+            frame.close();
+        }
         surface.close();
     }
 }

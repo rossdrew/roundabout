@@ -1,12 +1,14 @@
 package com.rox.roundabout.memory;
 
 import com.rox.roundabout.Box;
+import com.rox.roundabout.Theme;
 import com.rox.roundabout.UiHarness;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.rox.roundabout.Pixels.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -187,5 +189,16 @@ class MemoryPanelTest {
         h.scroll(300, 700, -5);
         h.click(300, watchY(4) - 54);
         assertEquals(4, panel.selectedWatch(), "scrolled no further than the end");
+    }
+
+    @Test
+    void theSelectedWatchIsTintedAndAHoveredOneRaised() {
+        panel(new NamedAddress("a", 1), new NamedAddress("b", 2), new NamedAddress("c", 3));
+        Theme t = h.ui.theme;
+        h.hover(600, 400);
+        assertColour(Theme.mix(t.panel, t.accent, 0.12f), h.pixel(221, (int) watchY(0)), "selected");
+        assertColour(t.panel, h.pixel(221, (int) watchY(1)), "not selected");
+        h.hover(300, watchY(1));
+        assertColour(t.panelRaised, h.pixel(221, (int) watchY(1)), "hovered");
     }
 }

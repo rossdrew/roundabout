@@ -1,5 +1,8 @@
 package com.rox.roundabout.debugger;
 
+import com.rox.roundabout.Box;
+import com.rox.roundabout.Theme;
+import com.rox.roundabout.UiHarness;
 import com.rox.roundabout.debugger.DebugTarget.CpuState;
 import com.rox.roundabout.debugger.DebugTarget.Flag;
 import com.rox.roundabout.debugger.DebugTarget.Register;
@@ -8,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.rox.roundabout.Pixels.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CpuPanelTest {
@@ -83,5 +87,39 @@ class CpuPanelTest {
 
         assertEquals(44 + 10 + 26, CpuPanel.height(16 + 220, eight));
         assertEquals(44 + 10 + 2 * 26 + 4, CpuPanel.height(16 + 219, eight));
+    }
+
+    @Test
+    void theFirstRegisterIsHighlightedAndSetFlagsLit() {
+        CpuState cpu = new CpuState(MOS_6502, Flag.fromBits("NV-BDIZC", 0x24));
+        try (UiHarness h = new UiHarness(340, 200)) {
+            Theme t = h.ui.theme;
+            h.ui(ui -> CpuPanel.draw(ui, new Box(0, 0, 340, 200), cpu)).frame();
+
+            // six tiles stretched across 324px from x 8; PC's is 67 wide
+            assertTrue(h.contains(new Box(8, 36, 67, 48), t.accent), "PC in the accent");
+            assertFalse(h.contains(new Box(81, 36, 45, 48), t.accent), "A isn't");
+            assertColour(t.panelRaised, h.pixel(10, 40), "tiles");
+            // flags from y 94, 37 wide and 4 apart: N V - B D I Z C, with - and I set
+            assertColour(t.panelRaised, h.pixel(10, 97), "N clear");
+            assertColour(over(t.panel, Theme.withAlpha(t.good, 0.18f)), h.pixel(8 + 2 * 41 + 2, 97), "- set");
+            assertColour(over(t.panel, Theme.withAlpha(t.good, 0.18f)), h.pixel(8 + 5 * 41 + 2, 97), "I set");
+            assertColour(t.panelRaised, h.pixel(8 + 7 * 41 + 2, 97), "C clear, the last on the row");
+        }
+    }
+
+    @Test
+    void wrappedRowsStretchToTheWidth() {
+        List<Register> registers = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            registers.add(new Register("R" + i, i, 32));
+        }
+        try (UiHarness h = new UiHarness(340, 300)) {
+            Theme t = h.ui.theme;
+            h.ui(ui -> CpuPanel.draw(ui, new Box(0, 0, 340, 300), new CpuState(registers, List.of()))).frame();
+            // three to a row; the fourth alone on the second row, stretched across it
+            assertColour(t.panelRaised, h.pixel(320, 36 + 48 + 6 + 24), "second row spans the width");
+            assertColour(t.panel, h.pixel(320, 36 + 48 + 3), "rows 6 apart");
+        }
     }
 }

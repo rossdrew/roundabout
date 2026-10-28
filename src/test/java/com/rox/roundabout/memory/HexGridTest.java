@@ -1,6 +1,7 @@
 package com.rox.roundabout.memory;
 
 import com.rox.roundabout.Box;
+import com.rox.roundabout.Theme;
 import com.rox.roundabout.UiHarness;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.rox.roundabout.Pixels.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -226,5 +228,69 @@ class HexGridTest {
         assertEquals(0x30, small.selected(), "below the last row");
         h.hover(x, rowY(4));
         assertEquals(-1, small.hovered());
+    }
+
+    // ---- what it draws ----
+
+    private static int rowTop(int visibleRow) {
+        return 24 + visibleRow * 20;
+    }
+
+    @Test
+    void aWrittenByteGlowsAndCools() {
+        Theme t = h.ui.theme;
+        memory.bytes[0x13] = 0x42;
+        heat.update(0);
+        h.frame();
+        assertColour(over(t.background, t.heat(1)), h.pixel((int) hexX(3), rowTop(1) + 3), "just written");
+        assertColour(over(t.background, Theme.withAlpha(t.warn, 0.15f)), h.pixel(548, rowTop(1) + 3), "ASCII too");
+        assertColour(t.background, h.pixel((int) hexX(4), rowTop(1) + 3), "its neighbour");
+
+        heat.update(0.35f);
+        h.frame();
+        assertColour(over(t.background, t.heat(0.5f)), h.pixel((int) hexX(3), rowTop(1) + 3), "a half-life later");
+        heat.update(10);
+        h.frame();
+        assertColour(t.background, h.pixel((int) hexX(3), rowTop(1) + 3), "cold");
+    }
+
+    @Test
+    void theSelectedByteIsOutlinedAndItsRowTinted() {
+        Theme t = h.ui.theme;
+        int rowTint = over(t.background, Theme.withAlpha(t.text, 0.035f));
+        assertColour(t.accent, h.pixel(78, rowTop(0) + 10), "outline, left edge");
+        assertColour(t.accent, h.pixel(78 + 25, rowTop(0) + 10), "outline, right edge");
+        assertNotColour(t.accent, h.pixel(78 + 27, rowTop(0) + 10), "next byte");
+        assertColour(over(rowTint, Theme.withAlpha(t.accent, 0.35f)), h.pixel(521, rowTop(0) + 3), "ASCII");
+        assertColour(rowTint, h.pixel(700, rowTop(0) + 10), "selected row");
+        assertColour(t.background, h.pixel(700, rowTop(1) + 10), "other rows");
+    }
+
+    @Test
+    void theHoveredByteIsLighter() {
+        Theme t = h.ui.theme;
+        h.hover(hexX(5), rowY(2));
+        int rowTint = over(t.background, Theme.withAlpha(t.text, 0.02f));
+        assertColour(over(rowTint, Theme.withAlpha(t.text, 0.12f)), h.pixel((int) hexX(5), rowTop(2) + 3), "hovered");
+        assertColour(rowTint, h.pixel((int) hexX(6), rowTop(2) + 3), "its row");
+    }
+
+    @Test
+    void eachRowIsMarkedWithItsRegionsColour() {
+        Theme t = h.ui.theme;
+        assertColour(over(t.background, Theme.withAlpha(0xFF5AA9FF, 0.7f)), h.pixel(1, rowTop(1) + 10), "region bar");
+        assertColour(t.background, h.pixel(5, rowTop(1) + 10), "3px wide");
+    }
+
+    @Test
+    void scrolledRowsShowTheirOwnBytes() {
+        Theme t = h.ui.theme;
+        grid.scrollTo(0x800);
+        memory.bytes[0x815] = 1;
+        heat.update(0);
+        h.frame();
+        // first visible row 0x7B0, so 0x815 is on visible row 6
+        assertColour(over(t.background, t.heat(1)), h.pixel((int) hexX(5), rowTop(6) + 3), "hot");
+        assertColour(t.background, h.pixel((int) hexX(5), rowTop(5) + 3), "the row above");
     }
 }
