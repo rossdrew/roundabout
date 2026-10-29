@@ -97,7 +97,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.rox:roundabout:0.3.0")
+    implementation("com.rox:roundabout:0.3.1")
 }
 ```
 
