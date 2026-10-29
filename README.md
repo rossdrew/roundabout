@@ -4,7 +4,7 @@
 #### _A GPU-rendered, immediate-mode UI toolkit for real-time debugging tools_
 
 [![Build](https://github.com/rossdrew/roundabout/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rossdrew/roundabout/actions/workflows/build.yml)
-[![Mutation Coverage](https://img.shields.io/endpoint?url=https://rossdrew.github.io/roundabout/pitest.json)](https://rossdrew.github.io/roundabout/pitest/)
+[![Mutation Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/rossdrew/roundabout/badges/pitest.json)](https://rossdrew.github.io/roundabout/pitest/)
 
 <br clear="left">
 
@@ -107,7 +107,7 @@ Skija, LWJGL and the Linux x64 natives come with it (Linux only for now). Run th
 
 `./gradlew test` runs the tests headless: widgets draw into an off-screen Skia surface (`UiHarness`), with input fed frame by frame, and tests check colours at chosen pixels rather than whole images, since fonts differ between machines. Linux needs `libEGL.so.1` (`libegl1` on Debian/Ubuntu) even without a display.
 
-`./gradlew pitest` runs [Pitest](https://pitest.org) mutation tests, with the report in `build/reports/pitest`. It fails below a 72% mutation score (`mutationThreshold` in `build.gradle.kts`); raise it as the score rises. The full run takes a few minutes. While working on one package, narrow it with `-PpitestScope=com.rox.roundabout.memory.*` (no threshold applies then). `GlfwWindow` (needs a real window) and the purely decorative `drawLink`/`drawHeader` are left out. Every PR runs the mutation tests, and `main` publishes the badge and report.
+`./gradlew pitest` runs [Pitest](https://pitest.org) mutation tests, with the report in `build/reports/pitest`. It fails below a 72% mutation score (`mutationThreshold` in `build.gradle.kts`); raise it as the score rises. The full run takes a few minutes. While working on one package, narrow it with `-PpitestScope=com.rox.roundabout.memory.*` (no threshold applies then). `GlfwWindow` (needs a real window) and the purely decorative `drawLink`/`drawHeader` are left out. Every PR runs the mutation tests, and `main` publishes the badge and report with [Pitest Badge](https://github.com/marketplace/actions/pitest-badge).
 
 ## Releasing 
 
