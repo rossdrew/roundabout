@@ -1,10 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
 Fixed:
 
 - Deleting the last watch (Del with one left) crashed the debugger.
+
+Behind the scenes: headless tests for the logic, interaction and drawing, run on every PR along with mutation testing (Pitest, gated at 72%).
 
 ## 0.3.0
 
