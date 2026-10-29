@@ -1,6 +1,3 @@
-import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.math.roundToInt
-
 plugins {
     id("java-library")
     id("maven-publish")
@@ -86,30 +83,6 @@ pitest {
     threads = Runtime.getRuntime().availableProcessors()
     outputFormats = listOf("HTML", "XML")
     timestampedReports = false
-}
-
-// Writes build/reports/pitest-badge/pitest.json, a shields.io endpoint badge; CI publishes it to GitHub Pages
-tasks.register("pitestBadge") {
-    description = "Writes the mutation score as a shields.io badge."
-    dependsOn("pitest")
-    doLast {
-        val mutations = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-            .parse(file("build/reports/pitest/mutations.xml"))
-            .getElementsByTagName("mutation")
-        val statuses = (0 until mutations.length).map { mutations.item(it).attributes.getNamedItem("status").nodeValue }
-        // Pitest's "detected" statuses: mutants a test caught (not merely ran)
-        val detected = statuses.count { it in setOf("KILLED", "TIMED_OUT", "NON_VIABLE", "MEMORY_ERROR", "RUN_ERROR") }
-        val score = if (statuses.isEmpty()) 0 else (100.0 * detected / statuses.size).roundToInt()
-        val color = when {
-            score >= 80 -> "brightgreen"
-            score >= 60 -> "yellow"
-            else -> "red"
-        }
-        val badge = file("build/reports/pitest-badge/pitest.json")
-        badge.parentFile.mkdirs()
-        badge.writeText("""{"schemaVersion": 1, "label": "mutation coverage", "message": "$score%", "color": "$color"}""")
-        println("Mutation coverage: $score%")
-    }
 }
 
 publishing {

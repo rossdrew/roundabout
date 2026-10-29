@@ -36,29 +36,40 @@ jobs:
       - name: Install Skia's native dependencies
         run: sudo apt-get update -q && sudo apt-get install -yq libegl1
       - name: Mutation tests
-        run: ./gradlew pitestBadge
+        run: ./gradlew pitest
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pitest-report
           path: build/reports/pitest
-      - name: Prepare Pages site
-        if: github.event_name == 'push'
-        run: |
-          mkdir -p public/pitest
-          cp build/reports/pitest-badge/pitest.json public/pitest.json
-          cp -r build/reports/pitest/* public/pitest/
-      - name: Upload Pages site
-        if: github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v4
+      - name: Score
+        uses: rossdrew/PitestCI@v1
         with:
-          path: public
+          reports: build/reports/pitest/mutations.xml
+          publish: false
 
-  # main only: the mutation badge (pitest.json) and report at https://rossdrew.github.io/roundabout/
-  pages:
+  # main only: the badge (badges branch) and the report site for Pages. A job of its own, so the
+  # token that can push never meets the build or its dependencies.
+  badge:
     if: github.event_name == 'push'
     needs: mutation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pitest-report
+          path: pitest
+      - uses: rossdrew/PitestCI@v1
+        with:
+          reports: pitest/mutations.xml
+          report: true
+
+  # main only: the report at https://rossdrew.github.io/roundabout/pitest/
+  pages:
+    needs: badge
     runs-on: ubuntu-latest
     permissions:
       pages: write
