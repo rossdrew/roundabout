@@ -49,9 +49,8 @@ jobs:
           reports: build/reports/pitest/mutations.xml
           publish: false
 
-  # main only: the badge (badges branch) and report (gh-pages, served by Pages at
-  # https://rossdrew.github.io/roundabout/pitest/). A job of its own, so the token that can push
-  # never meets the build or its dependencies.
+  # main only: the badge (badges branch) and the report site for Pages. A job of its own, so the
+  # token that can push never meets the build or its dependencies.
   badge:
     if: github.event_name == 'push'
     needs: mutation
@@ -67,3 +66,18 @@ jobs:
         with:
           reports: pitest/mutations.xml
           report: true
+
+  # main only: the report at https://rossdrew.github.io/roundabout/pitest/
+  pages:
+    needs: badge
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
