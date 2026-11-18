@@ -5,6 +5,7 @@
 
 [![Build](https://github.com/rossdrew/roundabout/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/rossdrew/roundabout/actions/workflows/build.yml)
 [![Mutation Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/rossdrew/roundabout/badges/pitest.json)](https://rossdrew.github.io/roundabout/pitest/)
+![AI Powered](https://img.shields.io/badge/AI%20Powered-blue)
 
 <br clear="left">
 
